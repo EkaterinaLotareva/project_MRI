@@ -1,9 +1,11 @@
-import numpy
+import numpy as np
 import scipy
 from math import *
 from scipy import special
 
-def function(theta, R1, R2, b1, b2, alpha, mu):
+mu = 1
+
+def function(theta, R1, R2, b1, b2, alpha):
 
     z2 = b1 - b2 * cos(alpha)
     x2 = b2 * sin(alpha)
@@ -18,8 +20,22 @@ def function(theta, R1, R2, b1, b2, alpha, mu):
 
 
 
-def inductance(R1, R2, b1, b2, alpha, mu):
-    scipy.integrate.quad(function, 0, 2*pi, args = (R1, R2, b1, b2, alpha, mu))
+def inductance(R1, R2, b1, b2, alpha):
+    return scipy.integrate.quad(function, 0, 2*pi, args = (R1, R2, b1, b2, alpha))
+
+def inductance_matrix(n, m, R, A, a):
+
+    fi = pi/(m-1)
+    L = np.zeros((n*m, n*m))
+
+    for i in range(0, n*m):
+        for j in range(0, n*m):
+            M_i = i // n    # номер стопки
+            N_i = i % n     # номер кольца в стопке
+            M_j = j // n
+            N_j = j % n
+            L[i,j] = inductance(R[N_i], R[N_j], A - a*N_i, A - a*N_j, fi * abs(M_i - M_j))
+    return L
 
 
 
