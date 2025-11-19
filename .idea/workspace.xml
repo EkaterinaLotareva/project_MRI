@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/general configuration.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/two rings.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/inductance.py" beforeDir="false" afterPath="$PROJECT_DIR$/inductance.py" afterDir="false" />
     </list>
@@ -109,13 +107,21 @@
       <option name="project" value="LOCAL" />
       <updated>1763572960102</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="матрица взаимной индутивности">
+      <created>1763576087360</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1763576087360</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="init" />
     <MESSAGE value="взаимная индуктивность двух колец" />
-    <option name="LAST_COMMIT_MESSAGE" value="взаимная индуктивность двух колец" />
+    <MESSAGE value="матрица взаимной индутивности" />
+    <option name="LAST_COMMIT_MESSAGE" value="матрица взаимной индутивности" />
   </component>
 </project>
