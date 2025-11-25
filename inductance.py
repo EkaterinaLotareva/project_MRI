@@ -81,7 +81,7 @@ def inductance_matrix(n, m, R, A, a):
 
 def inductance_matrix(n, m, R, A, a):
 
-    fi = pi/m
+    fi = 2*pi/m
     L = np.zeros((n*m, n*m))
 
 
