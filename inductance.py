@@ -41,7 +41,7 @@ def function(theta, R1, R2, b1, b2, alpha, mu, eps=1e-12):
 def inductance(R1, R2, b1, b2, alpha):
     if b1 == b2 & alpha == 0:
         print('совпадение колец')
-    if sqrt(b1**2 + b2**2 - b1*b2* - b1*b2*cos(alpha)) <= R1+R2:
+    if sqrt(b1**2 + b2**2 - b1*b2*cos(alpha)) <= R1+R2:
         print('пересечение колец')
     return scipy.integrate.quad(function, 0, 2*pi, args = (R1, R2, b1, b2, alpha))[0]
 

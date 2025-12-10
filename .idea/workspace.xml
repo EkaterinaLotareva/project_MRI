@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="">
+    <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="проверка конфигурации">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/general configuration.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/general configuration.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auxiliary functions" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/general configuration.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/geometry.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/inductance.py" beforeDir="false" afterPath="$PROJECT_DIR$/inductance.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -129,7 +131,14 @@
       <option name="project" value="LOCAL" />
       <updated>1764276024720</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="проверка конфигурации">
+      <created>1764280043238</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1764280043238</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -139,6 +148,7 @@
     <MESSAGE value="матрица взаимной индутивности" />
     <MESSAGE value="исправление ошибок" />
     <MESSAGE value="исправление" />
-    <option name="LAST_COMMIT_MESSAGE" value="исправление" />
+    <MESSAGE value="проверка конфигурации" />
+    <option name="LAST_COMMIT_MESSAGE" value="проверка конфигурации" />
   </component>
 </project>

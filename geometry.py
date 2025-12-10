@@ -10,37 +10,36 @@ mu0=4*np.pi*1e-7
 mu0_over_4pi = mu0 / (4 * np.pi) # Для удобства в расчетах
 
 class SymmetricSystem:
-    def __init__(self, m, R, delta, I_matrix, n, N=512, x_offset=0.0): # <-- Добавлен x_offset
+    def __init__(self, m, R, delta, n, A, N=512):
         """
-        Настройка системы.
-        m - количество стопок.
-        R - список радиусов колец (длиной n).
-        delta - список зазоров между кольцами (длиной n-1).
-        n - количество колец в стопке.
-        N - количество точек на кольцо.
-        x_offset - координата X центра первого кольца в стопке.
+        Настройка системы:
+        m - количество стопок
+        n - количество колец в стопке
+        R - список радиусов колец (длиной n) (от центра к краю)
+        delta - список зазоров между кольцами (длиной n-1) (от центра к краю)
+        A - расстояние от центра до первого кольца в стопке
+        N - количество точек на кольцо
         """
         self.m = m
-        self.angle_step = (2 * np.pi) / m  # Угол между стопками
+        self.fi = (2 * np.pi) / m  # Угол между стопками
+        self.R = R
+        self.delta = delta
+        self.N = N
+        self.n = n
+        self.A = A
 
-        # 1. Проверки длин массивов
+        '''Проверка длин массивов'''
         if len(R) != n:
              raise ValueError(f"Длина R ({len(R)}) должна совпадать с количеством колец n ({n})")
         if n > 1 and len(delta) != n - 1:
              raise ValueError(f"Для n={n} колец список delta должен содержать {n-1} зазор(а). Длина delta: {len(delta)}")
 
-        self.R = R
-        self.delta = delta
-        self.N = N
-        self.I_matrix = np.asarray(I_matrix)
-        self.n = n
-        self.x_offset = x_offset
 
     def _get_centers(self):
         delta_array = np.array(self.delta)
 
         if self.n > 0:
-            x_shifts = np.insert(delta_array, 0, self.x_offset)
+            x_shifts = np.insert(delta_array, 0, self.A)
         else:
             return np.empty((0, 3)) # Нет колец
 
@@ -80,14 +79,14 @@ class SymmetricSystem:
     def get_ring_center(self, stack_index, ring_index):
 
         delta_array = np.array(self.delta)
-        x_centers_all = np.cumsum(np.insert(delta_array, 0, self.x_offset))
+        x_centers_all = np.cumsum(np.insert(delta_array, 0, self.A))
 
         if ring_index >= self.n:
              raise IndexError("Индекс кольца выходит за пределы")
 
         x_j = x_centers_all[ring_index]
         C_local = np.array([x_j, 0, 0])
-        angle_phi = stack_index * self.angle_step
+        angle_phi = stack_index * self.fi
         return self._rotate_points(C_local, angle_phi)
 
     def assemble(self):
@@ -95,7 +94,7 @@ class SymmetricSystem:
         base_part = self._get_centers()
 
         for i in range(self.m):
-            current_angle = i * self.angle_step
+            current_angle = i * self.fi
             rotated_part = self._rotate_points(base_part, current_angle)
             system_coords.append(rotated_part)
 
