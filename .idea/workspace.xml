@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="проверка конфигурации">
+    <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/magnetic_field.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auxiliary functions" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/general configuration.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/auxiliary functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/auxiliary_functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/geometry.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inductance.py" beforeDir="false" afterPath="$PROJECT_DIR$/inductance.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,7 +138,14 @@
       <option name="project" value="LOCAL" />
       <updated>1764280043238</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="согласование обозначений на картинке и в коде">
+      <created>1765396502414</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1765396502414</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -149,6 +156,7 @@
     <MESSAGE value="исправление ошибок" />
     <MESSAGE value="исправление" />
     <MESSAGE value="проверка конфигурации" />
-    <option name="LAST_COMMIT_MESSAGE" value="проверка конфигурации" />
+    <MESSAGE value="согласование обозначений на картинке и в коде" />
+    <option name="LAST_COMMIT_MESSAGE" value="согласование обозначений на картинке и в коде" />
   </component>
 </project>

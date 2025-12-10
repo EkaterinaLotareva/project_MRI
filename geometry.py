@@ -1,13 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from math import *
-from scipy import integrate
-from scipy import constants
-
-
-mu0=4*np.pi*1e-7
-mu0_over_4pi = mu0 / (4 * np.pi) # Для удобства в расчетах
 
 class SymmetricSystem:
     def __init__(self, m, R, delta, n, A, N=512):
@@ -34,8 +25,8 @@ class SymmetricSystem:
         if n > 1 and len(delta) != n - 1:
              raise ValueError(f"Для n={n} колец список delta должен содержать {n-1} зазор(а). Длина delta: {len(delta)}")
 
-
     def _get_centers(self):
+
         delta_array = np.array(self.delta)
 
         if self.n > 0:
@@ -44,9 +35,6 @@ class SymmetricSystem:
             return np.empty((0, 3)) # Нет колец
 
         x_centers = np.cumsum(x_shifts)
-
-
-
         all_points = []
         theta = np.linspace(0, 2 * np.pi, self.N, endpoint=False)
 
@@ -100,51 +88,6 @@ class SymmetricSystem:
 
         return np.vstack(system_coords)
 
-    def b_s_l(self, obs_points):
-        if self.I_matrix is None:
-            raise ValueError("Матрица токов не задана")
-
-        obs_points = np.array(obs_points)
-        if obs_points.ndim == 1:
-            obs_points = obs_points[np.newaxis, :]
 
 
-        B = np.zeros((obs_points.shape[0], 3))
 
-        all_coordinates = self.assemble()
-
-        for i_stack in range(self.m):
-            for i_ring in range(self.n):
-                I = self.I_matrix[i_stack, i_ring]
-                if I == 0: continue # Пропускаем кольца с нулевым током
-
-                # Индексация
-                start_index = (i_stack * self.n * self.N) + (i_ring * self.N)
-                end_index = start_index + self.N
-                ring_coords = all_coordinates[start_index:end_index]
-
-                # Сегментация и замыкание
-                P1 = ring_coords[:-1, :]
-                P2 = ring_coords[1:, :]
-                P1 = np.vstack([P1, ring_coords[-1, :]])
-                P2 = np.vstack([P2, ring_coords[0, :]])
-
-                # Расчет dl и P_mid
-                dl_vector = P2 - P1
-                P_mid = (P1 + P2) / 2
-                P_mid_reshaped = P_mid[:, np.newaxis, :]
-
-                # Расчет r
-                r_vector = obs_points - P_mid_reshaped
-                r_mag_cubed = np.linalg.norm(r_vector, axis=2, keepdims=True)**3
-                r_mag_cubed = np.where(r_mag_cubed < 1e-12, 1e-12, r_mag_cubed) # Защита от деления на ноль
-
-                # Закон Био-Савара
-                dl_cross_r = np.cross( dl_vector[:, np.newaxis, :], r_vector)
-
-                dB_segments = mu0_over_4pi * I * dl_cross_r / r_mag_cubed
-
-                # Накопление
-                B += np.sum(dB_segments, axis=0)
-
-        return B
