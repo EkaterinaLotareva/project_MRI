@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/magnetic_field.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="создание класса для геометрии">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auxiliary functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/auxiliary_functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/geometry.py" beforeDir="false" afterPath="$PROJECT_DIR$/geometry.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inductance.py" beforeDir="false" afterPath="$PROJECT_DIR$/inductance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +144,14 @@
       <option name="project" value="LOCAL" />
       <updated>1765396502414</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="создание класса для геометрии">
+      <created>1765400935113</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1765400935113</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -157,6 +163,7 @@
     <MESSAGE value="исправление" />
     <MESSAGE value="проверка конфигурации" />
     <MESSAGE value="согласование обозначений на картинке и в коде" />
-    <option name="LAST_COMMIT_MESSAGE" value="согласование обозначений на картинке и в коде" />
+    <MESSAGE value="создание класса для геометрии" />
+    <option name="LAST_COMMIT_MESSAGE" value="создание класса для геометрии" />
   </component>
 </project>

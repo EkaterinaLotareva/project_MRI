@@ -47,7 +47,7 @@ def inductance(R1, R2, b1, b2, alpha):
 
 
 
-def inductance_matrix(n, m, R, A, a):
+def inductance_matrix(n, m, R, A, delta):
 
     fi = 2*pi/m
     L = np.zeros((n*m, n*m))
@@ -56,13 +56,13 @@ def inductance_matrix(n, m, R, A, a):
         M_i = i // n  # номер стопки
         N_i = i % n  # номер кольца в стопке
         R_i = R[N_i]
-        b_i = A - a * N_i
+        b_i = A + sum(delta[0:N_i])
 
         for j in range(i, n * m):  # только j >= i
             M_j = j // n
             N_j = j % n
             R_j = R[N_j]
-            b_j = A - a * N_j
+            b_j = A + sum(delta[0:N_j])
 
             alpha = fi * abs(M_i - M_j)
 

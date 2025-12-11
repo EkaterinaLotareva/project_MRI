@@ -25,7 +25,7 @@ class SymmetricSystem:
         if n > 1 and len(delta) != n - 1:
              raise ValueError(f"Для n={n} колец список delta должен содержать {n-1} зазор(а). Длина delta: {len(delta)}")
 
-    def _get_centers(self):
+    def points_on_rings_one_stack(self):
 
         delta_array = np.array(self.delta)
 
@@ -53,7 +53,8 @@ class SymmetricSystem:
 
         return np.vstack(all_points)
 
-    def _rotate_points(self, coords, phi):
+
+    def rotate_points(self, coords, phi):
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
         Rz = np.array([
@@ -64,7 +65,7 @@ class SymmetricSystem:
         return coords @ Rz
 
 
-    def get_ring_center(self, stack_index, ring_index):
+    def ring_center_general(self, stack_index, ring_index):
 
         delta_array = np.array(self.delta)
         x_centers_all = np.cumsum(np.insert(delta_array, 0, self.A))
@@ -75,15 +76,15 @@ class SymmetricSystem:
         x_j = x_centers_all[ring_index]
         C_local = np.array([x_j, 0, 0])
         angle_phi = stack_index * self.fi
-        return self._rotate_points(C_local, angle_phi)
+        return self.rotate_points(C_local, angle_phi)
 
-    def assemble(self):
+    def points_on_rings_general(self):
         system_coords = []
-        base_part = self._get_centers()
+        base_part = self.points_on_rings_one_stack()
 
         for i in range(self.m):
             current_angle = i * self.fi
-            rotated_part = self._rotate_points(base_part, current_angle)
+            rotated_part = self.rotate_points(base_part, current_angle)
             system_coords.append(rotated_part)
 
         return np.vstack(system_coords)
