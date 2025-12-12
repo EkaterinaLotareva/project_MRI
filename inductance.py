@@ -3,7 +3,7 @@ import scipy
 from math import *
 from scipy import special
 
-C = 0
+X = 0
 
 def integrant(theta, R1, R2, b1, b2, alpha, mu, eps=1e-12):
     # геометрия точки на контуре R2
@@ -34,7 +34,7 @@ def integrant(theta, R1, R2, b1, b2, alpha, mu, eps=1e-12):
     else:
         coefficient = numerator / denominator
 
-    C = (mu * R2 * sqrt(R1))/(2*pi)
+    X = (mu * R2 * sqrt(R1))/(2*pi)
 
     return (1 / (k * sqrt(rho))) * ((1.0 - k * k / 2.0) * special.ellipk(k * k) - special.ellipe(k * k)) * coefficient
 
@@ -72,7 +72,7 @@ def inductance_matrix(n, m, R, A, delta):
             L[i, j] = inductance(R_i, R_j, b_i, b_j, alpha)
             L[j, i] = L[i, j]
 
-    return L*C
+    return L*X
 
 
 
