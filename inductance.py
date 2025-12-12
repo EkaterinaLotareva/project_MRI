@@ -3,7 +3,9 @@ import scipy
 from math import *
 from scipy import special
 
-def function(theta, R1, R2, b1, b2, alpha, mu, eps=1e-12):
+C = 0
+
+def integrant(theta, R1, R2, b1, b2, alpha, mu, eps=1e-12):
     # геометрия точки на контуре R2
     z2 = b1 - b2 * cos(alpha)
     x2 = b2 * sin(alpha)
@@ -32,8 +34,9 @@ def function(theta, R1, R2, b1, b2, alpha, mu, eps=1e-12):
     else:
         coefficient = numerator / denominator
 
-    return ((2.0 * mu * sqrt(R1)) / (k * sqrt(rho) * 4.0 * pi)) * (
-                (1.0 - k * k / 2.0) * special.ellipk(k * k) - special.ellipe(k * k)) * coefficient * R2
+    C = (mu * R2 * sqrt(R1))/(2*pi)
+
+    return (1 / (k * sqrt(rho))) * ((1.0 - k * k / 2.0) * special.ellipk(k * k) - special.ellipe(k * k)) * coefficient
 
 
 
@@ -43,7 +46,7 @@ def inductance(R1, R2, b1, b2, alpha):
         print('совпадение колец')
     if sqrt(b1**2 + b2**2 - b1*b2*cos(alpha)) <= R1+R2:
         print('пересечение колец')
-    return scipy.integrate.quad(function, 0, 2*pi, args = (R1, R2, b1, b2, alpha))[0]
+    return scipy.integrate.quad(integrant, 0, 2*pi, args = (R1, R2, b1, b2, alpha))[0]
 
 
 
@@ -69,7 +72,7 @@ def inductance_matrix(n, m, R, A, delta):
             L[i, j] = inductance(R_i, R_j, b_i, b_j, alpha)
             L[j, i] = L[i, j]
 
-    return L
+    return L*C
 
 
 
