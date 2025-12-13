@@ -34,7 +34,7 @@ def integrant(theta, R1, R2, b1, b2, alpha, mu, eps=1e-12):
     else:
         coefficient = numerator / denominator
 
-    X = (mu * R2 * sqrt(R1))/(2*pi)
+    X = (mu)/(2*pi)
 
     return (1 / (k * sqrt(rho))) * ((1.0 - k * k / 2.0) * special.ellipk(k * k) - special.ellipe(k * k)) * coefficient
 
@@ -46,7 +46,7 @@ def inductance(R1, R2, b1, b2, alpha):
         print('совпадение колец')
     if sqrt(b1**2 + b2**2 - b1*b2*cos(alpha)) <= R1+R2:
         print('пересечение колец')
-    return scipy.integrate.quad(integrant, 0, 2*pi, args = (R1, R2, b1, b2, alpha))[0]
+    return R2 * sqrt(R1) * scipy.integrate.quad(integrant, 0, 2*pi, args = (R1, R2, b1, b2, alpha))[0]
 
 
 
