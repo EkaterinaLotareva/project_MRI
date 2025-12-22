@@ -3,11 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="">
       <change afterPath="$PROJECT_DIR$/optimization.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sizes.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/currents.py" beforeDir="false" afterPath="$PROJECT_DIR$/currents.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inductance.py" beforeDir="false" afterPath="$PROJECT_DIR$/inductance.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/magnetic_field.py" beforeDir="false" afterPath="$PROJECT_DIR$/magnetic_field.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -189,7 +185,14 @@
       <option name="project" value="LOCAL" />
       <updated>1766406043679</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="исправления">
+      <created>1766432210423</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1766432210423</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -207,6 +210,7 @@
     <MESSAGE value="соединение всего вместе" />
     <MESSAGE value="картинка с размерами" />
     <MESSAGE value="изменение функции для напряжений" />
-    <option name="LAST_COMMIT_MESSAGE" value="изменение функции для напряжений" />
+    <MESSAGE value="исправления" />
+    <option name="LAST_COMMIT_MESSAGE" value="исправления" />
   </component>
 </project>
