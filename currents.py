@@ -3,8 +3,8 @@ import math
 
 #Получение матрицы импедансов без учета взаимных индуктивностей
 
-def demo_Z_self_matrix(sigma, r, C, n, m, R):
-    demo_Z_self = np.zeros((n*m, n*m))
+def Z_self_matrix(rho, r, C, n, m, R):
+    Z_self = np.zeros((n*m, n*m))
     r = r.reshape(n*m, 1)
     C = C.reshape(n*m, 1)
     for i in range(n * m):
@@ -15,12 +15,12 @@ def demo_Z_self_matrix(sigma, r, C, n, m, R):
             r_j = r[N_j]
             R_j = R[N_j]
             if i == j:
-              demo_Z_self[i, j] = 1/sigma * 1/(np.pi*r_j**2*1e6) * 2*np.pi * R_j
+              Z_self[i, j] = rho * 1/(np.pi*r_j**2*1e6) * 2*np.pi * R_j
             else:
-              demo_Z_self[j, i] = 0
-              demo_Z_self[j, i] = demo_Z_self[i, j]
+              Z_self[j, i] = 0
+              Z_self[j, i] = Z_self[i, j]
 
-    return demo_Z_self
+    return Z_self
 
 def generate_voltage_array(U_0, m, n, phi_0=0):
     """

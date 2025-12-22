@@ -1,6 +1,6 @@
 import numpy as np
 import scipy
-from math import *
+import math
 from scipy import special
 
 

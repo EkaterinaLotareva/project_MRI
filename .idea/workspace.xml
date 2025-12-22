@@ -7,6 +7,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/currents.py" beforeDir="false" afterPath="$PROJECT_DIR$/currents.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/inductance.py" beforeDir="false" afterPath="$PROJECT_DIR$/inductance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/magnetic_field.py" beforeDir="false" afterPath="$PROJECT_DIR$/magnetic_field.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -181,7 +182,14 @@
       <option name="project" value="LOCAL" />
       <updated>1765578912946</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="изменение функции для напряжений">
+      <created>1766406043679</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1766406043679</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -198,6 +206,7 @@
     <MESSAGE value="нахождение токов" />
     <MESSAGE value="соединение всего вместе" />
     <MESSAGE value="картинка с размерами" />
-    <option name="LAST_COMMIT_MESSAGE" value="картинка с размерами" />
+    <MESSAGE value="изменение функции для напряжений" />
+    <option name="LAST_COMMIT_MESSAGE" value="изменение функции для напряжений" />
   </component>
 </project>
