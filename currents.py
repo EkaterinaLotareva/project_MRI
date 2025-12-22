@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 #Получение матрицы импедансов без учета взаимных индуктивностей
 
@@ -21,20 +22,35 @@ def demo_Z_self_matrix(sigma, r, C, n, m, R):
 
     return demo_Z_self
 
-#Создание вектора напряжений (запитывается каждое n-ое кольцо)
+def generate_voltage_array(U_0, m, n, phi_0=0):
+    """
+    Генерирует массив напряжений, где напряжение есть только в первом элементе
+    каждой стопки (группы) с круговым фазовым сдвигом 2*pi/M между стопками.
+    Остальные элементы имеют нулевое напряжение.
 
-def create_U(n, m, U_A=1.0, f=63.8e6):
+    Аргументы:
+    U_0 (float): Амплитуда напряжения в элементах с напряжением.
+    m (int): Количество стопок (групп).
+    n (int): Количество элементов в каждой стопке.
+    phi_0 (float): Начальная фаза (по умолчанию 0).
 
-    N = n * m
-    U = np.zeros(N, dtype=complex)
-    indices_to_feed = np.arange(0, N, n)
-    U[indices_to_feed] = U_A
+    Возвращает:
+    numpy.ndarray: Одномерный массив комплексных чисел, представляющих напряжения.
+    """
+    V_array = np.zeros(m * n, dtype=complex)
 
-    return U
+    delta_phi = (2 * math.pi) / m
+
+    for i in range(m):
+        idx = i * n
+        phi = phi_0 - i * delta_phi
+        V_array[idx] = U_0 * np.exp(1j * phi)
+
+    return V_array
 
 #Функция получения вектора токов через решение матричного ур-я
 
-def calc_I(Z_self, U, omega, L): # Z - матрица импедансов, U - матрица напряжений
+def calc_I(Z_self, U, omega, L, n, m): # Z - матрица импедансов, U - матрица напряжений
 
 
     if Z_self.dtype != np.complex128:

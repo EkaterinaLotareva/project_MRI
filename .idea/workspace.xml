@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="" />
+    <list default="true" id="fae9c049-851d-4991-b2bd-3994030c53de" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/optimization.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sizes.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/currents.py" beforeDir="false" afterPath="$PROJECT_DIR$/currents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inductance.py" beforeDir="false" afterPath="$PROJECT_DIR$/inductance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -167,7 +174,14 @@
       <option name="project" value="LOCAL" />
       <updated>1765578258288</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="картинка с размерами">
+      <created>1765578912946</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1765578912946</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -183,6 +197,7 @@
     <MESSAGE value="обезразмеривание кода" />
     <MESSAGE value="нахождение токов" />
     <MESSAGE value="соединение всего вместе" />
-    <option name="LAST_COMMIT_MESSAGE" value="соединение всего вместе" />
+    <MESSAGE value="картинка с размерами" />
+    <option name="LAST_COMMIT_MESSAGE" value="картинка с размерами" />
   </component>
 </project>
