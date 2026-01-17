@@ -5,17 +5,16 @@ import math
 
 def Z_self_matrix(rho, r, C, n, m, R):
     Z_self = np.zeros((n*m, n*m))
-    r = r.reshape(n*m, 1)
+    C = np.array(C)
     C = C.reshape(n*m, 1)
     for i in range(n * m):
         for j in range(i, n * m):  # только j >= i
             M_j = j // n
             N_j = j % n
             C_j = C[N_j]
-            r_j = r[N_j]
             R_j = R[N_j]
             if i == j:
-              Z_self[i, j] = rho * 1/(np.pi*r_j**2*1e6) * 2*np.pi * R_j
+              Z_self[i, j] = rho * 1/(np.pi*r**2*1e6) * 2*np.pi * R_j
             else:
               Z_self[j, i] = 0
               Z_self[j, i] = Z_self[i, j]
@@ -63,6 +62,7 @@ def calc_I(Z_self, U, omega, L, n, m): # Z - матрица импедансов
     Z_self_matrix = Z_self.T + np.eye(n*m)
     Z = Z_self_matrix - 1j*omega*L
     I = np.linalg.solve(Z, U)
+    I = I.reshape(m, n)
 
     return I
 

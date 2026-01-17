@@ -2,6 +2,9 @@ from inductance import *
 from currents import *
 from magnetic_field import *
 import math
+from optimization import *
+import numpy as np
+
 
 R = [3.5, 3.5, 3.5, 3.5, 3.5] #см
 Delta = [1, 0.1, 1, 0.1] #см
@@ -10,7 +13,7 @@ n = 5
 A = 8 #см
 w = math.pi*2*63.8 #Мгц
 U_0 = 1
-C = None
+C = [1]*(m*n)
 r = 1 #радиус сечения кольца
 rho = 1.724*(10**3)
 resistance = []
@@ -41,4 +44,18 @@ def grid(radius, num_points):
 
 grid = grid(A, num_points)
 
-b_s_l(grid, I, N, n, m, points_on_rings_general(delta, n, A, N, R, m))
+#b_s_l(grid, I, N, n, m, points_on_rings_general(delta, n, A, N, R, m))
+
+fixed_params = {'r': r, 'rho': rho, 'A': A, 'U_0': U_0, 'w': w, 'N': N, 'grid': grid}
+#bounds = [(1e-9, 1e-6), (1, 10), (4, 20), (3, 10), (0.1, 10), (0, 2*np.pi)]
+bounds = (
+    np.array([1e-9, 0.1, 5, 2, 0.001, 0]),      # нижние границы (min)
+    np.array([1e-6, 1.0, 50, 10, 0.1, 2*np.pi]) # верхние границы (max)
+)
+options = {
+            'c1': 0.5,   # когнитивный параметр
+            'c2': 0.3,   # социальный параметр
+            'w': 0.9     # инерция
+        }
+optimizer = MRIOptimizer(fixed_params)
+optimization = optimizer.optimize(bounds, options)
