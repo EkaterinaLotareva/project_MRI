@@ -75,8 +75,15 @@ def b_s_l(obs_points, I_matrix, N, n, m, all_coordinates):
         raise ValueError("Матрица токов не задана")
 
     obs_points = np.array(obs_points)
+
+    #Если передана одна точка [x, y] или [x, y, z], делаем из неё строку (1, N)
     if obs_points.ndim == 1:
         obs_points = obs_points[np.newaxis, :]
+
+    # Если координат 2 (x, y), добавляем координаты по Z со значениями 0
+    if obs_points.shape[1] == 2:
+        z_zeros = np.zeros((obs_points.shape[0], 1))
+        obs_points = np.hstack([obs_points, z_zeros])
 
     B = np.zeros((obs_points.shape[0], 3))
 
