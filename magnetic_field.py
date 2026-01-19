@@ -119,6 +119,6 @@ def b_s_l(obs_points, I_matrix, N, n, m, all_coordinates):
             dB_segments = mu0_over_4pi * I * dl_cross_r / r_mag_cubed
 
             # Накопление
-            B += np.sum(dB_segments, axis=0)
+            B += np.real(np.sum(dB_segments, axis=0))
 
     return B
