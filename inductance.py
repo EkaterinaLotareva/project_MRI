@@ -42,7 +42,7 @@ def inductance(R1, R2, b1, b2, alpha):
 
         factor = (mu / (2 * np.pi)) * (1 / (k * math.sqrt(rho))) * ((1.0 - k * k / 2.0) * special.ellipk(k * k) - special.ellipe(k * k)) * coefficient
 
-        return factor * coefficient
+        return factor 
 
         # Вычисление интеграла
     result = scipy.integrate.quad(
@@ -58,30 +58,37 @@ def inductance(R1, R2, b1, b2, alpha):
 
 
 #Получение матрицы взаимных индуктивностей
-def inductance_matrix(n, m, R, r, A, delta):
+def inductance_matrix(n, m, R, L_own, A, delta):
+    """
+    R - массив длины n (параметры одной стопки)
+    """
+    fi = 2 * np.pi / m
+    N_total = n * m
+    L = np.zeros((N_total, N_total))
 
-    fi = 2*np.pi/m
-    L = np.zeros((n*m, n*m))
-
-
-    for i in range(n * m):
+    for i in range(N_total):
         M_i = i // n  # номер стопки
-        N_i = i % n  # номер кольца в стопке
-        R_i = R[N_i]
-        b_i = A + sum(delta[0:N_i])
+        N_i = i % n   # номер кольца в стопке
 
-        for j in range(i, n * m):  # только j >= i
+        R_i = R[N_i]
+        b_i = A + np.sum(delta[0:N_i])
+
+        for j in range(i, N_total):
             M_j = j // n
             N_j = j % n
+
             R_j = R[N_j]
-            b_j = A + sum(delta[0:N_j])
+            b_j = A + np.sum(delta[0:N_j])
 
             alpha = fi * abs(M_i - M_j)
+
             if i == j:
-              L[i, j] = 4*np.pi*1e-7*float(R_j)*(np.log(8*float(R_j)/float(r)) - 2)
+                # Собственная индуктивность (разд. 7.3)
+                L[i, j] = L_own
             else:
-              L[i, j] = inductance(R_i, R_j, b_i, b_j, alpha)
-              L[j, i] = L[i, j]
+                # Взаимная индуктивность
+                L[i, j] = inductance(R_i, R_j, b_i, b_j, alpha)
+                L[j, i] = L[i, j]  # Симметрия
 
     return L
 
