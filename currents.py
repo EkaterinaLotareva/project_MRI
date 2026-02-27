@@ -3,23 +3,30 @@ import math
 
 #Получение матрицы импедансов без учета взаимных индуктивностей
 
-def Z_self_matrix(rho, r, C, n, m, R):
-    Z_self = np.zeros((n*m, n*m))
-    C = np.array(C)
-    C = C.reshape(n*m, 1)
-    for i in range(n * m):
-        for j in range(i, n * m):  # только j >= i
-            M_j = j // n
-            N_j = j % n
-            C_j = C[N_j]
-            R_j = R[N_j]
-            if i == j:
-              Z_self[i, j] = rho * 1/(np.pi*r**2*1e6) * 2*np.pi * R_j
-            else:
-              Z_self[j, i] = 0
-              Z_self[j, i] = Z_self[i, j]
+def Z_self_matrix(r, C, n, m, R, omega):
+    """
+    r - сопротивление кольца
+    C - ёмкость конденсаторов (массив длины n)
+    R - радиусы колец (массив длины n)
+    omega - частота
+    """
+    N = n * m
+    Z_self = np.zeros((N, N), dtype=complex)
+
+    for i in range(N):
+        ring_idx = i % n  # Номер типа кольца (0..n-1)
+        
+        # Ёмкостное сопротивление: Z_C = i / (omega * C)
+        if C[ring_idx] > 0:
+            Z_C = 1j / (omega * C[ring_idx])
+        else:
+            Z_C = 0
+
+        # Диагональ: R + Z_C
+        Z_self[i, i] = R_ohm + Z_C
 
     return Z_self
+
 
 def generate_voltage_array(U_0, m, n, phi_0=0):
     """
@@ -50,21 +57,30 @@ def generate_voltage_array(U_0, m, n, phi_0=0):
 #Функция получения вектора токов через решение матричного ур-я
 
 def calc_I(Z_self, U, omega, L, n, m): # Z - матрица импедансов, U - матрица напряжений
+    
+    """
+    Z_self - матрица с R и C (из исправленной функции выше)
+    U - вектор напряжений
+    omega - циклическая частота
+    L - полная матрица индуктивностей (включая взаимные L_ij)
+    n - количество колец в стопке
+    m - количество стопок
+    """
 
+    # Приведение к комплексному типу
+    Z_self = Z_self.astype(np.complex128, copy=False)
+    U = U.astype(np.complex128, copy=False)
+    L = L.astype(np.complex128, copy=False)
 
-    if Z_self.dtype != np.complex128:
-        Z_self = Z_self.astype(np.complex128, copy=False)
-    if U.dtype != np.complex128:
-        U = U.astype(np.complex128, copy=False)
-    if L.dtype != np.float64:
-        L = L.astype(np.float64, copy=False)
+    # Полный импеданс: Z = Z_self - i*omega*L 
+    Z = Z_self - 1j * omega * L
 
-    Z_self_matrix = Z_self.T + np.eye(n*m)
-    Z = Z_self_matrix - 1j*omega*L
-    I = np.linalg.solve(Z, U)
-    I = I.reshape(m, n)
+    # Решение системы линейных уравнений
+    I_flat = np.linalg.solve(Z, U)  # 1D массив длины n*m
 
-    return I
+    # Изменение размера для геометрии (m стопок × n колец)
+    I_matrix = I_flat.reshape(m, n)  
+    return I_matrix
 
 
 
