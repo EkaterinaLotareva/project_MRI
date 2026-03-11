@@ -28,10 +28,10 @@ rho = 1 / sigma          # Удельное сопротивление (Ом·м
 
 R_rel = [] #относительные размеры
 delta = [] #относительные размеры
-for i in range(len(R)):
-    R_rel.append(R[i]/x_off)
-for i in range(len(Delta)):
-    delta.append(Delta[i]/x_off)
+for i in range(len(rad)):
+    R_rel.append(rad[i]/x_off)
+for i in range(len(deltas)):
+    delta.append(deltas[i]/x_off)
     
 # Параметры области визуализации
 k = 1.5
@@ -47,7 +47,7 @@ L = inductance_matrix(n, m, R_real, L_own, x_off, delta)
 
 # Импедансы
 print("Расчёт матрицы импедансов...")
-Z_self = Z_self_matrix(rho, r_ohm, C, n, m, R_real omega)
+Z_self = Z_self_matrix(r_ohm, C, n, m, R_real omega)
 
 # Напряжения
 print("Генерация вектора напряжений...")
@@ -62,8 +62,8 @@ print(f"Максимальный ток в системе: {np.max(np.abs(I_matr
 
 # Сетка наблюдения
 print("Построение сетки наблюдения...")
-x_coords = np.linspace(-x_max, x_max, 200)
-y_coords = np.linspace(-x_max, x_max, 200)
+x_coords = np.linspace(-x_max, x_max, 20)
+y_coords = np.linspace(-x_max, x_max, 20)
 X, Y = np.meshgrid(x_coords, y_coords, indexing='ij')
 
 # Точки наблюдения в плоскости z=0
@@ -108,7 +108,7 @@ frequencies = np.linspace(50e6, 80e6, 50)
 B_center = []
 for f in frequencies:
     omega_test = 2 * np.pi * f
-    Z_self_test = Z_self_matrix(rho, r_wire, C, n, m, rad, omega_test)
+    Z_self_test = Z_self_matrix(r_ohm, C, n, m, rad, omega_test)
     I_test = calc_I(Z_self_test, U, omega_test, L, n, m)
     B_test = b_s_l(np.array([[0, 0, 0]]), I_test, N_seg, n, m, all_coordinates)
     B_center.append(np.linalg.norm(B_test[0]))
@@ -128,6 +128,7 @@ plt.savefig('resonance_curve.png', dpi=300)
 plt.show()
 
 # Оптимизация
+"""
 def grid(radius, num_points):
     side_points = int(np.sqrt(num_points / np.pi) * 2) + 1
     x = np.linspace(-radius, radius, side_points)
@@ -155,3 +156,4 @@ options = {
         }
 optimizer = MRIOptimizer(fixed_params)
 optimization = optimizer.optimize(bounds, options)
+"""
