@@ -1,0 +1,5 @@
+math
+numpy
+scipy
+matplotlib.pyplot
+pyswarms
