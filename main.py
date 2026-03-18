@@ -28,6 +28,17 @@ U_0 = 500.0                  # Амплитуда напряжения (В)
 phi_0 = 0                  # Начальная фаза
 A = 0.08                   # Расстояние от центра до первого кольца (м)
 
+sigma = 5.96e7           # Удельная проводимость меди (См/м)
+rho = 1 / sigma          # Удельное сопротивление (Ом·м)
+
+
+R_rel = [] #относительные размеры
+delta = [] #относительные размеры
+for i in range(len(rad)):
+    R_rel.append(rad[i]/x_off)
+for i in range(len(deltas)):
+    delta.append(deltas[i]/x_off)
+    
 # Параметры области визуализации
 k = 2
 x_max = k * A
@@ -60,14 +71,7 @@ L = inductance_matrix(
 # 4. РАСЧЁТ ИМПЕДАНСОВ И ТОКОВ
 
 print("Расчёт матрицы импедансов...")
-Z_self = Z_self_matrix(
-    r=r_ohm,           
-    C=C,
-    n=n,
-    m=m,
-    R=radii,
-    omega=omega
-)
+Z_self = Z_self_matrix(r_ohm, C, n, m, R_real omega)
 
 print("Генерация вектора напряжений...")
 # U = np.full()
@@ -83,14 +87,8 @@ print(f"Максимальный ток в системе: {np.max(np.abs(I_matr
 # 5. РАСЧЁТ МАГНИТНОГО ПОЛЯ
 
 print("Построение сетки наблюдения...")
-
-x_coords = np.linspace(-x_max, x_max, 200)
-y_coords = np.linspace(-x_max, x_max, 200)
-
-"""
-x_coords = np.linspace(0, 1.5*A + gaps[0], 200)
-y_coords = np.linspace(-1.2*radii[0], 1.2*radii[0], 200) # для дыух колец
-"""
+x_coords = np.linspace(-x_max, x_max, 20)
+y_coords = np.linspace(-x_max, x_max, 20)
 X, Y = np.meshgrid(x_coords, y_coords, indexing='ij')
 
 # Точки наблюдения в плоскости z=0
@@ -186,20 +184,9 @@ N_seg_ACH = 128
 
 for i, f in enumerate(frequencies):
     omega_test = 2 * np.pi * f
-    Z_self_test = Z_self_matrix(
-        r=r_ohm, C=C, n=n, m=m, R=radii, omega=omega_test
-    )
-    I_test = calc_I(
-        Z_self=Z_self_test, U=U, omega=omega_test, L=L, n=n, m=m
-    )
-    B_test = b_s_l(
-        obs_points=np.array([[0, 0, 0]]),
-        I_matrix=I_test,
-        N=N_seg_ACH,
-        n=n,
-        m=m,
-        all_coordinates=all_coordinates
-    )
+    Z_self_test = Z_self_matrix(r_ohm, C, n, m, rad, omega_test)
+    I_test = calc_I(Z_self_test, U, omega_test, L, n, m)
+    B_test = b_s_l(np.array([[0, 0, 0]]), I_test, N_seg, n, m, all_coordinates)
     B_center.append(np.linalg.norm(B_test[0]))
     
     # Прогресс
@@ -208,14 +195,46 @@ for i, f in enumerate(frequencies):
 
 B_center = np.array(B_center)
 
-# Проверка на пустые данные
-if np.all(np.isnan(B_center)):
-    print(" Предупреждение: Все значения поля NaN!")
-else:
-    plot_resonance_curve(
-        frequencies=frequencies,
-        B_values=B_center,
-        resonance_freq=frequency_MHz * 1e6,  
-        save_path='resonance_curve.png'
-    )
+fig2, ax2 = plt.subplots(figsize=(10, 5))
+ax2.plot(frequencies/1e6, B_center, 'b-', linewidth=2)
+ax2.axvline(omega/(2*np.pi)/1e6, color='red', linestyle='--',
+           label=f'Рабочая частота = {omega/(2*np.pi)/1e6:.1f} МГц')
+ax2.set_xlabel('Частота (МГц)')
+ax2.set_ylabel('|B| в центре (Тл)')
+ax2.set_title('Резонансная характеристика системы')
+ax2.grid(True, linestyle=':', alpha=0.6)
+ax2.legend()
+plt.tight_layout()
+plt.savefig('resonance_curve.png', dpi=300)
+plt.show()
+
+# Оптимизация
+"""
+def grid(radius, num_points):
+    side_points = int(np.sqrt(num_points / np.pi) * 2) + 1
+    x = np.linspace(-radius, radius, side_points)
+    y = np.linspace(-radius, radius, side_points)
+    X, Y = np.meshgrid(x, y)
+    distances = np.sqrt(X ** 2 + Y ** 2)
+    mask = distances <= radius
+    points_inside = np.column_stack((X[mask], Y[mask]))
+    return points_inside
+
+grid = grid(A, num_points)
+
+#b_s_l(grid, I, N, n, m, points_on_rings_general(delta, n, A, N, R, m))
+
+fixed_params = {'r': r, 'rho': rho, 'A': A, 'U_0': U_0, 'w': w, 'N': N, 'grid': grid}
+#bounds = [(1e-9, 1e-6), (1, 10), (4, 20), (3, 10), (0.1, 10), (0, 2*np.pi)]
+bounds = (
+    np.array([1e-9, 0.1, 5, 2, 0.001, 0]),      # нижние границы (min)
+    np.array([1e-6, 1.0, 50, 10, 0.1, 2*np.pi]) # верхние границы (max)
+)
+options = {
+            'c1': 0.5,   # когнитивный параметр
+            'c2': 0.3,   # социальный параметр
+            'w': 0.9     # инерция
+        }
+optimizer = MRIOptimizer(fixed_params)
+optimization = optimizer.optimize(bounds, options)
 """
