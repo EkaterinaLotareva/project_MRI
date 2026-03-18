@@ -88,7 +88,3 @@ class SymmetricSystem:
             system_coords.append(rotated_part)
 
         return np.vstack(system_coords)
-
-
-
-
