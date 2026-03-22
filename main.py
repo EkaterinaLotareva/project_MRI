@@ -2,7 +2,11 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
+<<<<<<< HEAD
 from src.geometry import points_on_rings_general, ring_center_general
+=======
+from src.geometry import points_on_rings_general, ring_center_general, get_ring_normal
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 from src.inductance import inductance_matrix
 from src.currents import Z_self_matrix, generate_voltage_array, calc_I
 from src.magnetic_field import b_s_l
@@ -11,11 +15,19 @@ from src.optimization import MRIOptimizer
 
 # 1. ПАРАМЕТРЫ СИСТЕМЫ
 
+<<<<<<< HEAD
 m = 2                     # Количество стопок
 n = 1                      # Количество колец в стопке
 radii = np.full(n, 0.035)  # Радиусы колец (м)
 #gaps = np.array([0.01, 0.001, 0.01, 0.001])  # Зазоры между кольцами (n-1 штук)
 gaps = np.array([0.07])  # Зазоры между кольцами (n-1 штук)
+=======
+m = 6                     # Количество стопок
+n = 5                      # Количество колец в стопке
+radii = np.full(n, 0.035)  # Радиусы колец (м)
+gaps = np.array([0.01, 0.001, 0.01, 0.001])  # Зазоры между кольцами (n-1 штук)
+# gaps = np.array([0.07])  # Зазоры между кольцами (n-1 штук)
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 N_seg = 512                # Дискретизация кольца (кол-во сегментов)
 
 # Физические параметры
@@ -26,8 +38,24 @@ frequency_MHz = 68.5       # Частота (МГц)
 omega = 2 * math.pi * frequency_MHz * 1e6  # Циклическая частота (рад/с)
 U_0 = 500.0                  # Амплитуда напряжения (В)
 phi_0 = 0                  # Начальная фаза
+<<<<<<< HEAD
 A = 0.0175                   # Расстояние от центра до первого кольца (м)
 
+=======
+A = 0.08                   # Расстояние от центра до первого кольца (м)
+
+sigma = 5.96e7           # Удельная проводимость меди (См/м)
+rho = 1 / sigma          # Удельное сопротивление (Ом·м)
+
+
+R_rel = [] #относительные размеры
+delta = [] #относительные размеры
+for i in range(len(rad)):
+    R_rel.append(rad[i]/x_off)
+for i in range(len(deltas)):
+    delta.append(deltas[i]/x_off)
+    
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 # Параметры области визуализации
 k = 2
 x_max = k * A
@@ -36,7 +64,11 @@ x_max = k * A
 # 2. РАСЧЁТ ГЕОМЕТРИИ
 
 print("Расчёт геометрии системы...")
+<<<<<<< HEAD
 all_coordinates, normals = points_on_rings_general(
+=======
+all_coordinates = points_on_rings_general(
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
     delta=gaps,
     n=n,
     A=A,
@@ -53,13 +85,20 @@ print("Расчёт матрицы индуктивностей...")
 
 L = inductance_matrix(
     n=n, m=m, R=radii, L_own=L_self, A=A, delta=gaps, 
+<<<<<<< HEAD
     all_points=all_coordinates, normals=normals, N_seg=N_seg
 )
 print(f"Матрица индуктивности: {L}")
+=======
+    all_points=all_coordinates, N_seg=N_seg
+)
+
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 
 # 4. РАСЧЁТ ИМПЕДАНСОВ И ТОКОВ
 
 print("Расчёт матрицы импедансов...")
+<<<<<<< HEAD
 Z_self = Z_self_matrix(
     r=r_ohm,           
     C=C,
@@ -68,6 +107,9 @@ Z_self = Z_self_matrix(
     R=radii,
     omega=omega
 )
+=======
+Z_self = Z_self_matrix(r_ohm, C, n, m, R_real omega)
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 
 print("Генерация вектора напряжений...")
 # U = np.full()
@@ -81,6 +123,7 @@ print(f"Токи: {I_matrix}")
 
 # 5. РАСЧЁТ МАГНИТНОГО ПОЛЯ
 
+<<<<<<< HEAD
 print("Построение сетки наблюдения...")
 
 x_coords = np.linspace(-x_max, x_max, 200)
@@ -90,13 +133,25 @@ y_coords = np.linspace(-x_max, x_max, 200)
 x_coords = np.linspace(0, 1.5*A + gaps[0], 200)
 y_coords = np.linspace(-1.2*radii[0], 1.2*radii[0], 200) # для дыух колец
 """
+=======
+
+# 5. РАСЧЁТ МАГНИТНОГО ПОЛЯ
+
+print("Построение сетки наблюдения...")
+x_coords = np.linspace(-x_max, x_max, 20)
+y_coords = np.linspace(-x_max, x_max, 20)
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 X, Y = np.meshgrid(x_coords, y_coords, indexing='ij')
 
 # Точки наблюдения в плоскости z=0
 obs_points = np.stack([X.ravel(), Y.ravel(), np.zeros_like(X.ravel())], axis=1)
 
 # Комплексное поле (векторное)
+<<<<<<< HEAD
 B_complex = b_s_l(obs_points, I_matrix, N_seg, n, m, all_coordinates, normals)
+=======
+B_complex = b_s_l(obs_points, I_matrix, N_seg, n, m, all_coordinates)
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 
 # Модуль вектора в каждой точке
 B_amplitude = np.linalg.norm(B_complex, axis=1) 
@@ -185,6 +240,7 @@ N_seg_ACH = 128
 
 for i, f in enumerate(frequencies):
     omega_test = 2 * np.pi * f
+<<<<<<< HEAD
     Z_self_test = Z_self_matrix(
         r=r_ohm, C=C, n=n, m=m, R=radii, omega=omega_test
     )
@@ -199,6 +255,11 @@ for i, f in enumerate(frequencies):
         m=m,
         all_coordinates=all_coordinates
     )
+=======
+    Z_self_test = Z_self_matrix(r_ohm, C, n, m, rad, omega_test)
+    I_test = calc_I(Z_self_test, U, omega_test, L, n, m)
+    B_test = b_s_l(np.array([[0, 0, 0]]), I_test, N_seg, n, m, all_coordinates)
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
     B_center.append(np.linalg.norm(B_test[0]))
     
     # Прогресс
@@ -207,6 +268,7 @@ for i, f in enumerate(frequencies):
 
 B_center = np.array(B_center)
 
+<<<<<<< HEAD
 # Проверка на пустые данные
 if np.all(np.isnan(B_center)):
     print(" Предупреждение: Все значения поля NaN!")
@@ -218,3 +280,48 @@ else:
         save_path='resonance_curve.png'
     )
 """
+=======
+fig2, ax2 = plt.subplots(figsize=(10, 5))
+ax2.plot(frequencies/1e6, B_center, 'b-', linewidth=2)
+ax2.axvline(omega/(2*np.pi)/1e6, color='red', linestyle='--',
+           label=f'Рабочая частота = {omega/(2*np.pi)/1e6:.1f} МГц')
+ax2.set_xlabel('Частота (МГц)')
+ax2.set_ylabel('|B| в центре (Тл)')
+ax2.set_title('Резонансная характеристика системы')
+ax2.grid(True, linestyle=':', alpha=0.6)
+ax2.legend()
+plt.tight_layout()
+plt.savefig('resonance_curve.png', dpi=300)
+plt.show()
+
+# Оптимизация
+"""
+def grid(radius, num_points):
+    side_points = int(np.sqrt(num_points / np.pi) * 2) + 1
+    x = np.linspace(-radius, radius, side_points)
+    y = np.linspace(-radius, radius, side_points)
+    X, Y = np.meshgrid(x, y)
+    distances = np.sqrt(X ** 2 + Y ** 2)
+    mask = distances <= radius
+    points_inside = np.column_stack((X[mask], Y[mask]))
+    return points_inside
+
+grid = grid(A, num_points)
+
+#b_s_l(grid, I, N, n, m, points_on_rings_general(delta, n, A, N, R, m))
+
+fixed_params = {'r': r, 'rho': rho, 'A': A, 'U_0': U_0, 'w': w, 'N': N, 'grid': grid}
+#bounds = [(1e-9, 1e-6), (1, 10), (4, 20), (3, 10), (0.1, 10), (0, 2*np.pi)]
+bounds = (
+    np.array([1e-9, 0.1, 5, 2, 0.001, 0]),      # нижние границы (min)
+    np.array([1e-6, 1.0, 50, 10, 0.1, 2*np.pi]) # верхние границы (max)
+)
+options = {
+            'c1': 0.5,   # когнитивный параметр
+            'c2': 0.3,   # социальный параметр
+            'w': 0.9     # инерция
+        }
+optimizer = MRIOptimizer(fixed_params)
+optimization = optimizer.optimize(bounds, options)
+"""
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87

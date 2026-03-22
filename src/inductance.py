@@ -2,7 +2,11 @@ import numpy as np
 import scipy
 import math
 from scipy import special
+<<<<<<< HEAD
 from src.geometry import points_on_rings_general, ring_center_general
+=======
+from src.geometry import points_on_rings_general, ring_center_general, get_ring_normal
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 
 
 
@@ -59,6 +63,7 @@ def inductance(R1, R2, b1, b2, alpha):
 
 
 #Получение матрицы взаимных индуктивностей
+<<<<<<< HEAD
 def inductance_matrix(n, m, R, L_own, A, delta, all_points, normals, N_seg):
 
     # R - массив длины n (параметры одной стопки)
@@ -67,6 +72,20 @@ def inductance_matrix(n, m, R, L_own, A, delta, all_points, normals, N_seg):
     L = np.zeros((n * m, n * m))
 
     for i in range(n * m):
+=======
+def inductance_matrix(n, m, R, L_own, A, delta, all_points, N_seg):
+
+    # R - массив длины n (параметры одной стопки)
+   
+    fi = 2 * np.pi / m
+    N_total = n * m
+    L = np.zeros((N_total, N_total))
+
+    for i in range(N_total):
+        pts_i = all_points[i*N_seg : (i+1)*N_seg]
+        n_i = get_ring_normal(pts_i) 
+
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
         M_i = i // n  # номер стопки
         N_i = i % n   # номер кольца в стопке
 
@@ -81,11 +100,18 @@ def inductance_matrix(n, m, R, L_own, A, delta, all_points, normals, N_seg):
 
             R_j = R[N_j]
             b_j = A + np.sum(delta[0:N_j])
+<<<<<<< HEAD
             n_j = normals[M_j]
+=======
+
+            pts_j = all_points[j * N_seg : (j + 1) * N_seg]
+            n_j = get_ring_normal(pts_j)
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 
             if i == j:
                 L[i, j] = L_own
             else:
+<<<<<<< HEAD
                 cos_alpha = np.dot(n_i, n_j)
                 alpha = np.arccos(np.clip(cos_alpha, -1.0, -1.0))
     
@@ -93,6 +119,13 @@ def inductance_matrix(n, m, R, L_own, A, delta, all_points, normals, N_seg):
                 M = inductance(R_i, R_j, b_i, b_j, alpha)
                 L[i, j] = sign * M
                 L[j, i] = L[i, j]
+=======
+                # Взаимная индуктивность
+                cos_alpha = np.dot(n_i, n_j)
+                alpha = np.arccos(np.clip(cos_alpha, -1.0, 1.0))
+                L[i, j] = inductance(R_i, R_j, b_i, b_j, alpha)
+                L[j, i] = L[i, j]  # Симметрия
+>>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 
     return L
 
