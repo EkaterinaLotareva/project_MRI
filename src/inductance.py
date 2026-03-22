@@ -2,6 +2,7 @@ import numpy as np
 import scipy
 import math
 from scipy import special
+from src.geometry import points_on_rings_general, ring_center_general
 
 
 
@@ -58,37 +59,40 @@ def inductance(R1, R2, b1, b2, alpha):
 
 
 #Получение матрицы взаимных индуктивностей
-def inductance_matrix(n, m, R, L_own, A, delta):
-    """
-    R - массив длины n (параметры одной стопки)
-    """
-    fi = 2 * np.pi / m
-    N_total = n * m
-    L = np.zeros((N_total, N_total))
+def inductance_matrix(n, m, R, L_own, A, delta, all_points, normals, N_seg):
 
-    for i in range(N_total):
+    # R - массив длины n (параметры одной стопки)
+   
+    fi = 2 * np.pi / m
+    L = np.zeros((n * m, n * m))
+
+    for i in range(n * m):
         M_i = i // n  # номер стопки
         N_i = i % n   # номер кольца в стопке
 
         R_i = R[N_i]
         b_i = A + np.sum(delta[0:N_i])
+        n_i = normals[M_i]
 
-        for j in range(i, N_total):
+        for j in range(i, n * m):
+        
             M_j = j // n
             N_j = j % n
 
             R_j = R[N_j]
             b_j = A + np.sum(delta[0:N_j])
-
-            alpha = fi * abs(M_i - M_j)
+            n_j = normals[M_j]
 
             if i == j:
-                # Собственная индуктивность (разд. 7.3)
                 L[i, j] = L_own
             else:
-                # Взаимная индуктивность
-                L[i, j] = inductance(R_i, R_j, b_i, b_j, alpha)
-                L[j, i] = L[i, j]  # Симметрия
+                cos_alpha = np.dot(n_i, n_j)
+                alpha = np.arccos(np.clip(cos_alpha, -1.0, -1.0))
+    
+                sign = np.sign(cos_alpha)
+                M = inductance(R_i, R_j, b_i, b_j, alpha)
+                L[i, j] = sign * M
+                L[j, i] = L[i, j]
 
     return L
 

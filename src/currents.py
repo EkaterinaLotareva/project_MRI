@@ -23,10 +23,9 @@ def Z_self_matrix(r, C, n, m, R, omega):
             Z_C = 0
 
         # Диагональ: R + Z_C
-        Z_self[i, i] = R_ohm + Z_C
+        Z_self[i, i] = r + Z_C
 
     return Z_self
-
 
 def generate_voltage_array(U_0, m, n, phi_0=0):
     """
