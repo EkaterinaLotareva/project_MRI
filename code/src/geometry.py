@@ -28,11 +28,7 @@ def points_on_rings_one_stack(delta, n, A, N, R):
     return np.vstack(all_points)
 
 
-<<<<<<< HEAD
 def rotate_points(coords, phi):
-=======
-def rotate_points( coords, phi):
->>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
     cos_phi = np.cos(phi)
     sin_phi = np.sin(phi)
     Rz = np.array([
@@ -60,16 +56,11 @@ def points_on_rings_general(delta, n, A, N, R, m):
     fi = (2 * np.pi) / m
     system_coords = []
     base_part = points_on_rings_one_stack(delta, n, A, N, R)
-<<<<<<< HEAD
     system_normals = []
     base_normal = np.array([-1.0, 0.0, 0.0])
-=======
->>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
-
     for i in range(m):
         current_angle = i * fi
         rotated_part = rotate_points(base_part, current_angle)
-<<<<<<< HEAD
         rotated_normal = rotate_points(base_normal, current_angle)
         system_coords.append(rotated_part)
         system_normals.append(rotated_normal)
@@ -77,21 +68,10 @@ def points_on_rings_general(delta, n, A, N, R, m):
     return np.vstack(system_coords), np.vstack(system_normals)
 
 """
-=======
-        system_coords.append(rotated_part)
-
-    return np.vstack(system_coords)
-
-
->>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
 def get_ring_normal(points):
     center = np.mean(points, axis=0)
     r_vec = points[0] - center
     dl_vec = points[1] - points[0]
     n = np.cross(r_vec, dl_vec)
-<<<<<<< HEAD
     return n / np.linalg.norm(n)
 """
-=======
-    return n / np.linalg.norm(n)
->>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87

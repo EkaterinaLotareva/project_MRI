@@ -35,7 +35,6 @@ mu0 = 4 * np.pi * 1e-7
 mu0_over_4pi = mu0 / (4 * np.pi)
 
 
-<<<<<<< HEAD
 def b_s_l(obs_points, I_matrix, N_seg, n, m, all_coordinates, normals):
     N_obs = len(obs_points)
     B_total = np.zeros((N_obs, 3), dtype=complex)
@@ -79,56 +78,6 @@ def b_s_l(obs_points, I_matrix, N_seg, n, m, all_coordinates, normals):
                 dB = (mu0 / (4 * np.pi)) * current * cross / (r_dist**3)
                 B_total += dB
     
-=======
-def b_s_l(obs_points, I_matrix, N, n, m, all_coordinates):
-
-    
-    if I_matrix is None:
-        raise ValueError("Матрица токов не задана")
-
-    obs_points = np.asanyarray(obs_points)
-
-    if obs_points.ndim == 1:
-        obs_points = obs_points[np.newaxis, :]
-    
-    if obs_points.shape[1] == 2:
-        z_zeros = np.zeros((obs_points.shape[0], 1))
-        obs_points = np.hstack([obs_points, z_zeros])
-
-    B_total = np.zeros((obs_points.shape[0], 3), dtype=complex)
-
-    for i_stack in range(m):
-        for i_ring in range(n):
-            I = I_matrix[i_stack, i_ring]
-            
-            if np.abs(I) < 1e-18:
-                continue
-
-            start_idx = (i_stack * n * N) + (i_ring * N)
-            ring_coords = all_coordinates[start_idx : start_idx + N]
-
-            P1 = ring_coords
-            P2 = np.roll(ring_coords, -1, axis=0)
-            
-            dl_vectors = P2 - P1         # (N, 3)
-            P_mids = (P1 + P2) / 2.0     # (N, 3)
-
-      
-            for j in range(N):
-                dl = dl_vectors[j]       
-                pm = P_mids[j]           
-                r_vec = obs_points - pm
-                
-                r_mag_sq = np.sum(r_vec**2, axis=1, keepdims=True)
-                r_mag_cubed = r_mag_sq * np.sqrt(r_mag_sq)
-                
-                r_mag_cubed = np.where(r_mag_cubed < 1e-15, 1e-15, r_mag_cubed)
-
-                dl_cross_r = np.cross(dl, r_vec)
-
-                B_total += mu0_over_4pi * I * (dl_cross_r / r_mag_cubed)
-
->>>>>>> 1de6c2c92a56bf2303adee686b508e19c28d6d87
     return B_total
 
 #Рассчет поля соленоида
