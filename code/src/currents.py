@@ -66,20 +66,41 @@ def calc_I(Z_self, U, omega, L, n, m): # Z - матрица импедансов
     m - количество стопок
     """
 
-    # Приведение к комплексному типу
     Z_self = Z_self.astype(np.complex128, copy=False)
     U = U.astype(np.complex128, copy=False)
     L = L.astype(np.complex128, copy=False)
+    
+    invalid_L = ~np.isfinite(L)
+    if np.any(invalid_L):
+        L[invalid_L] = 1e-12  
 
-    # Полный импеданс: Z = Z_self - i*omega*L 
-    Z = Z_self - 1j * omega * L
+    invalid_Z = ~np.isfinite(Z_self)
+    if np.any(invalid_Z):
+        Z_self[invalid_Z] = 1e-6  
+    try:
+        Z = Z_self - 1j * omega * L
+        
+        Z_abs = np.abs(Z)
+        if np.any(Z_abs < 1e-12) or np.any(~np.isfinite(Z_abs)):
+            Z = Z + 1e-8 * np.eye(len(Z))
+        
+    except Exception as e:
+        print(f"Ошибка при расчёте Z: {e}")
+        raise
 
-    # Решение системы линейных уравнений
-    I_flat = np.linalg.solve(Z, U)  # 1D массив длины n*m
+    try:
+        I_flat = np.linalg.solve(Z, U)  
+    except np.linalg.LinAlgError as e:
+        print(f"Ошибка при решении системы: {e}")
+        print(f"det(Z) = {np.linalg.det(Z)}")
+        raise
 
-    # Изменение размера для геометрии (m стопок × n колец)
-    I_matrix = I_flat.reshape(m, n)  
+    
+    I_matrix = I_flat.reshape(m, n)
+    
+    
+    if not np.all(np.isfinite(I_matrix)):
+        print("Предупреждение: токи содержат NaN/Inf значения")
+        I_matrix = np.nan_to_num(I_matrix, nan=0.0, posinf=1e6, neginf=-1e6)
+    
     return I_matrix
-
-
-

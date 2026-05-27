@@ -10,9 +10,8 @@ from src.shoora import L_parallel
 mu=4 * np.pi * 1e-7
 
 def inductance(R1, R2, b1, b2, alpha):
-    print(round(np.abs(b2-b1), 4), round(R1, 4))
     def integrand(theta, R1, R2, b1, b2, alpha, mu, eps=1e-12):
-        # геометрия точки на контуре R2
+
         z2 = b1 - b2 * math.cos(alpha)
         x2 = b2 * math.sin(alpha)
         x = -x2 - R2 * math.cos(alpha) * math.sin(theta)
@@ -21,7 +20,6 @@ def inductance(R1, R2, b1, b2, alpha):
 
         rho = math.sqrt(x * x + y * y)
 
-        # Защита от нулевого rho (точка на оси) и от очень маленького k
         if rho < eps:
             rho = eps
 
@@ -45,7 +43,6 @@ def inductance(R1, R2, b1, b2, alpha):
         return factor 
 
 
-        # Вычисление интеграла
     result = scipy.integrate.quad(
                                  integrand,
                                   0,
@@ -55,9 +52,9 @@ def inductance(R1, R2, b1, b2, alpha):
                                         epsrel=1e-12,
                                         limit=100 )
     if True:
-        theta = 0  # Выбираем произвольное значение для theta, например, 0
+        theta = 0  
         eps = 1e-12
-            # геометрия точки на контуре R2
+          
         z2 = b1 - b2 * math.cos(alpha)
         x2 = b2 * math.sin(alpha)
         x = -x2 - R2 * math.cos(alpha) * math.sin(theta)
@@ -66,7 +63,7 @@ def inductance(R1, R2, b1, b2, alpha):
 
         rho = math.sqrt(x * x + y * y)
 
-        # Защита от нулевого rho (точка на оси) и от очень маленького k
+        
         if rho < eps:
             rho = eps
 
@@ -99,17 +96,16 @@ def inductance(R1, R2, b1, b2, alpha):
     return  R2 * math.sqrt(R1) * result[0]
 
 
-#Получение матрицы взаимных индуктивностей
 def inductance_matrix(n, m, R, L_own, A, delta, all_points, normals, N_seg):
 
-    # R - массив длины n (параметры одной стопки)
+    
    
     fi = 2 * np.pi / m
     L = np.zeros((n * m, n * m))
 
     for i in range(n * m):
-        M_i = i // n  # номер стопки
-        N_i = i % n   # номер кольца в стопке
+        M_i = i // n  
+        N_i = i % n   
 
         R_i = R[N_i]
         b_i = A + np.sum(delta[0:N_i])
@@ -147,4 +143,3 @@ def inductance_matrix(n, m, R, L_own, A, delta, all_points, normals, N_seg):
                 L[j, i] = L[i, j]
 
     return L
-

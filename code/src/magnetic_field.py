@@ -1,103 +1,91 @@
 import numpy as np
+from scipy.special import ellipk, ellipe
 
-
+import matplotlib.pyplot as plt
+from scipy.integrate import dblquad
+from src.geometry import points_on_rings_general, ring_center_general
+from src.currents import Z_self_matrix, generate_voltage_array, calc_I
+from src.inductance import inductance_matrix
 mu0=4*np.pi*1e-7
 mu0_over_4pi = mu0 / (4 * np.pi) 
 
+def B_analytical(r_obs, R, I, center, normal):
+    """
+    Аналитический расчет магнитного поля витка.
+    r_obs: (3,) координаты точки наблюдения (глобальные)
+    R: радиус кольца
+    I: ток
+    center: (3,) координаты центра кольца
+    normal: (3,) единичный вектор нормали к плоскости кольца
+    """
+    r_local = r_obs - center
+    z = np.dot(r_local, normal)
+    rho_vec = r_local - z * normal
+    rho = np.linalg.norm(rho_vec)
+    
+    if rho < 1e-12:
+        B_z_val = (mu0 * I * R**2) / (2 * (R**2 + z**2)**1.5)
+        return B_z_val * normal
 
-#Функция для дискретизация контура с током
-def loop_segments(R=1.0, N=512):
-    phi = np.linspace(0, 2*np.pi, N, endpoint=False) #Массив углов ϕ создается от 0 до 2pi, endpoint=False исключает последнюю точку 2π
-    dphi = 2*np.pi / N #Рассчитывается угловая длина, необходимая для преобразования производной в конечный вектор сегмента
-    x = R * np.cos(phi)
-    y = R * np.sin(phi)
-    z = np.zeros_like(x)
-    rp = np.stack((x, y, z), axis=1) #Создается массив центров сегментов rj′ = (xj, yj, zj) путем объединения x, y, z координат вдоль новой оси (axis=1).
-    dl = np.stack((-R * np.sin(phi), R * np.cos(phi), np.zeros_like(phi)), axis=1) * dphi #Вычисляется вектор длины сегмента
-    return rp, dl
+    rho_unit = rho_vec / rho # Единичный вектор радиального направления
+    k2 = (4 * R * rho) / ((R + rho)**2 + z**2)
+    
+    # 4. Расчет компонентов
+    denom = np.sqrt((R + rho)**2 + z**2)
+    denom_special = (R - rho)**2 + z**2
 
+    if denom_special < 1e-18: denom_special = 1e-18
+    
+    K = ellipk(k2)
+    E = ellipe(k2)
+    factor = (mu0 * I) / (2 * np.pi)
+    
+    B_rho = factor * (z / (rho * denom)) * (-K + ((R**2 + rho**2 + z**2) / denom_special) * E)
+    B_z = factor * (1 / denom) * (K + ((R**2 - rho**2 - z**2) / denom_special) * E)
+    
+    return B_rho * rho_unit + B_z * normal
 
+def b_s_l_optimized(obs_points, I_matrix, n, m, ring_centers, normals, radii):
 
-#Б-С-Л для кольца с током
-
-def bio_savar_loop_point(r_obs, R=1.0, I=1.0, N=1024):
-    rp, dl = loop_segments(R, N)
-    Rvecs = r_obs.reshape(1,3) - rp # массив векторов, направленных от каждого сегмента кольца к точке наблюдения
-    norms = np.linalg.norm(Rvecs, axis=1)
-    norms = np.where(norms < 1e-12, 1e-12, norms) #избегание деления на 0
-    B = (mu0 / (4*np.pi)) * I * np.sum(np.cross(dl, Rvecs) / (norms**3).reshape(-1,1), axis=0)
-    return B
-
-
-
-
-mu0 = 4 * np.pi * 1e-7
-mu0_over_4pi = mu0 / (4 * np.pi)
-
-
-def b_s_l(obs_points, I_matrix, N_seg, n, m, all_coordinates, normals):
     N_obs = len(obs_points)
     B_total = np.zeros((N_obs, 3), dtype=complex)
     
-    dtheta = 2 * np.pi / N_seg 
-    
     for stack in range(m):
         normal = normals[stack]
-        
         for ring in range(n):
-            ring_glob = stack * n + ring
-            seg_start = ring_glob * N_seg
-            seg_end = seg_start + N_seg
-            ring_points = all_coordinates[seg_start:seg_end]
-            
+            ring_idx = stack * n + ring
             current = I_matrix[stack, ring]
-            ring_center = np.mean(ring_points, axis=0)
+            center = ring_centers[ring_idx]
+            R = radii[ring]
             
-            
-            rad = ring_points - ring_center
-            R = np.mean(np.linalg.norm(rad, axis=1))
-            
-
-            dl = np.cross(normal, rad)
-            dl_norms = np.linalg.norm(dl, axis=1, keepdims=True)
-            dl = dl / dl_norms
-            
-            dl_length = R * dtheta  # ← Из loop_segments
-            dl_vecs = dl * dl_length
-            
-            for seg in range(N_seg):
-                dl_vec = dl_vecs[seg]
-                seg_pos = ring_points[seg]
-                
-                r_vecs = obs_points - seg_pos
-                r_dist = np.linalg.norm(r_vecs, axis=1, keepdims=True)
-            
-                r_dist = np.where(r_dist < 1e-12, 1e-12, r_dist)
-                
-                cross = np.cross(dl_vec, r_vecs)
-                dB = (mu0 / (4 * np.pi)) * current * cross / (r_dist**3)
-                B_total += dB
+            for i in range(N_obs):
+                B_total[i] += B_analytical(obs_points[i], R, current, center, normal)
     
     return B_total
 
-#Рассчет поля соленоида
-def B_solenoid(r_obs, R=1.0, I=1.0, n=10, L=1.0, Nphi=1024):
-    r_obs = np.asarray(r_obs, dtype=float).reshape(3)
-    Nturns = L*n
-    x, y, z_obs = r_obs
-    if Nturns <= 0:
-        return np.zeros(3)
-    if L <= 0:
-        raise ValueError("length must be positive")
 
-    z_positions = np.linspace(-L / 2.0, L / 2.0, int(Nturns))
-    B = np.zeros(3, dtype=float)
-
-    for zp in z_positions:
-
-        r_rel = np.array([x, y, z_obs - zp], dtype=float)
-        B_ring = bio_savar_loop_point(r_rel, R=R, I=I, N=Nphi)
-        B += B_ring
-
-
-    return B
+def quality_metric(I, n, m, current_centers, current_normals, R_array, R_domain, N_grid=40):
+    
+    x = np.linspace(-R_domain, R_domain, N_grid)
+    y = np.linspace(-R_domain, R_domain, N_grid)
+    X, Y = np.meshgrid(x, y)
+    
+    mask = (X**2 + Y**2) <= R_domain**2
+    
+    X_inside = X[mask]
+    Y_inside = Y[mask]
+    Z_inside = np.zeros_like(X_inside) 
+    
+    obs_points = np.stack((X_inside, Y_inside, Z_inside), axis=1)
+    
+    B_complex = b_s_l_optimized(obs_points, I, n, m, current_centers, current_normals, R_array)
+    
+    B_abs = np.linalg.norm(B_complex, axis=1)
+    
+    std_B = np.std(B_abs)
+    mean_B = np.mean(B_abs)
+    
+    if mean_B < 1e-12:
+        return 1.0
+        
+    return std_B / mean_B

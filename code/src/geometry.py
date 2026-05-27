@@ -32,8 +32,8 @@ def rotate_points(coords, phi):
     cos_phi = np.cos(phi)
     sin_phi = np.sin(phi)
     Rz = np.array([
-        [cos_phi, -sin_phi, 0],
-        [sin_phi, cos_phi, 0],
+        [cos_phi, sin_phi, 0],
+        [-sin_phi, cos_phi, 0],
         [0, 0, 1]
     ])
     return coords @ Rz
