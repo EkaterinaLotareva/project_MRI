@@ -3,10 +3,15 @@ from scipy import integrate
 import src.config as config
 
 mu_0 = 4 * np.pi * 1e-7
-C = 299792458.0
+C_LIGHT = 299792458.0
 
+
+# =========================================================================
+# 1. Ваши функции расчета взаимной индуктивности (с защитой от arg < 0)
+# =========================================================================
 
 def L_int_par(dx: float, dy: float, dz: float, r1: float, r2: float, k: float, width: float = 0) -> complex:
+    """Взаимная индуктивность для параллельных колец."""
     def internal(phi1, phi2):
         A = dz**2 + dx**2 + dy**2 + 2*r2*(dx*np.cos(phi2) + dy*np.sin(phi2)) + r1**2 + r2**2
         B = -2*dx*r1 - 2*r1*r2*np.cos(phi2)
@@ -37,6 +42,7 @@ def L_int_par(dx: float, dy: float, dz: float, r1: float, r2: float, k: float, w
 
 
 def L_int_ort(dx: float, dy: float, dz: float, r1: float, r2: float, k: float, width: float = 0) -> complex:
+    """Взаимная индуктивность для взаимно ортогональных колец (90 градусов)."""
     def internal(phi1, phi2):
         A = dz**2 + dx**2 + dy**2 + 2*r2*(dy*np.sin(phi2) - dz*np.cos(phi2)) + r1**2 + r2**2
         B = 2*dx*r1
@@ -67,6 +73,10 @@ def L_int_ort(dx: float, dy: float, dz: float, r1: float, r2: float, k: float, w
 
 
 def L_int_angle(b1: float, b2: float, r1: float, r2: float, alpha: float, k: float) -> complex:
+    """
+    Обобщение ваших функций для произвольного угла alpha между стопками.
+    При alpha = 0 совпадает с L_int_par, при alpha = pi/2 совпадает с L_int_ort.
+    """
     if np.isclose(alpha, 0.0, atol=1e-6):
         return L_int_par(dx=0.0, dy=0.0, dz=abs(b1 - b2), r1=r1, r2=r2, k=k)
     elif np.isclose(alpha, np.pi / 2, atol=1e-6):
@@ -108,18 +118,28 @@ def L_int_angle(b1: float, b2: float, r1: float, r2: float, alpha: float, k: flo
     return L * mu_0
 
 
+# =========================================================================
+# 2. Сборка матрицы индуктивностей L
+# =========================================================================
+
 def inductance_matrix(n, m, R, L_own, A, delta, k=None, **kwargs):
+    """
+    Расчет матрицы индуктивностей n*m x n*m.
+    Принимает **kwargs (all_points, normals, N_seg), чтобы не ломать вызовы в main.py и optimization.py.
+    """
     if k is None:
         omega = getattr(config, 'omega', 2 * np.pi * 68.5e6)
-        k = omega / C
+        k = omega / C_LIGHT
 
     fi = 2 * np.pi / m
     N_total = n * m
     L = np.zeros((N_total, N_total), dtype=complex)
 
+    # Расстояния центров колец от центра системы вдоль луча стопки
     x_shifts = np.insert(np.array(delta), 0, A)
     b_all = np.cumsum(x_shifts)
 
+    # Кэш для ускорения: индуктивность между одинаковыми парами колец на одинаковых углах
     cache = {}
 
     for i in range(N_total):
@@ -138,6 +158,7 @@ def inductance_matrix(n, m, R, L_own, A, delta, k=None, **kwargs):
             R_j = R[N_j]
             b_j = b_all[N_j]
 
+            # Угол между стопками
             delta_M = abs(M_i - M_j)
             if delta_M > m // 2:
                 delta_M = m - delta_M
@@ -149,8 +170,10 @@ def inductance_matrix(n, m, R, L_own, A, delta, k=None, **kwargs):
                 M_val = cache[cache_key]
             else:
                 if delta_M == 0:
+                    # Кольца в одной стопке (коаксиальные, параллельные)
                     M_val = L_int_par(dx=0.0, dy=0.0, dz=abs(b_i - b_j), r1=R_i, r2=R_j, k=k)
                 else:
+                    # Кольца в разных стопках под углом alpha
                     M_val = L_int_angle(b1=b_i, b2=b_j, r1=R_i, r2=R_j, alpha=alpha, k=k)
 
                 cache[cache_key] = M_val

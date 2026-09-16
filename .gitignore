@@ -1,4 +1,21 @@
-*.venv
-*.idea
-*.ipynb_checkpoints
-*__pycache__
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Optimization results
+code/optimization_results/
+code/results/
+
+# Jupyter
+.ipynb_checkpoints/
