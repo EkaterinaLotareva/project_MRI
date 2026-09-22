@@ -63,3 +63,20 @@ def points_on_rings_general(delta, n, A, N, R, m):
         system_normals.append(rotated_normal)
 
     return np.vstack(system_coords), np.vstack(system_normals)
+
+
+def stack_basis(m):
+    """
+    Возвращает базисные векторы e1, e2 для каждой из m стопок.
+    e1, e2 лежат в плоскости кольца, ортогональны друг другу и нормали.
+    """
+    fi = 2 * np.pi / m
+    e1 = np.zeros((m, 3))
+    e2 = np.zeros((m, 3))
+    for s in range(m):
+        angle = s * fi
+        ca, sa = np.cos(angle), np.sin(angle)
+        # Базовые векторы стопки: (0,1,0) и (0,0,1), повёрнутые через rotate_points
+        e1[s] = [-sa,  ca, 0.0]   # (0,1,0) @ Rz(angle)
+        e2[s] = [0.0, 0.0, 1.0]   # (0,0,1) остаётся на месте
+    return e1, e2

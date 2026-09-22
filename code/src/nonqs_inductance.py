@@ -1,14 +1,14 @@
 # src/nonqs_inductance.py
 import numpy as np
 from scipy.integrate import dblquad
-from src.geometry import points_on_rings_one_stack  # ваш существующий модуль
+from src.geometry import points_on_rings_one_stack, stack_basis
 
 mu0 = 4 * np.pi * 1e-7
 c = 299792458.0
 
 
 # ---------------------------------------------------------------------------
-# 1. Геометрия: точки + касательные (расширение вашей points_on_rings_general)
+# 1. Геометрия: точки + касательные (расширение points_on_rings_general)
 # ---------------------------------------------------------------------------
 def points_and_tangents_on_rings_general(delta, n, A, N, R, m):
     """
@@ -55,14 +55,12 @@ def points_and_tangents_on_rings_general(delta, n, A, N, R, m):
             np.array(normals_list))
 
 
-# ---------------------------------------------------------------------------
-# 2. Восстановление геометрии одного кольца из его точек
-# ---------------------------------------------------------------------------
+"""
 def fit_ring_geometry(coords_block):
-    """
+    
     coords_block : (N, 3), точки одного кольца, равномерно по theta.
     Возвращает center (3,), e1 (3,), e2 (3,), radius (float).
-    """
+    
     center = coords_block.mean(axis=0)
     v0 = coords_block[0] - center
     r = np.linalg.norm(v0)
@@ -71,17 +69,27 @@ def fit_ring_geometry(coords_block):
     perp = v1 - (v1 @ e1) * e1
     e2 = perp / np.linalg.norm(perp)
     return center, e1, e2, r
-
+"""
 
 # ---------------------------------------------------------------------------
 # 3. Не квазистатическая M между двумя кольцами (по точкам)
 # ---------------------------------------------------------------------------
-def mutual_inductance_rings_nonqs_from_coords(
-    coords1, coords2, f,
+def mutual_inductance_rings_nonqs(
+    c1, e1a, e1b, r1,   # аналитические параметры первого кольца
+    c2, e2a, e2b, r2,   # аналитические параметры второго кольца
+    f,
     epsabs=1e-10, epsrel=1e-8,
 ):
-    c1, e1a, e1b, r1 = fit_ring_geometry(coords1)
-    c2, e2a, e2b, r2 = fit_ring_geometry(coords2)
+    """
+    Не квазистатическая взаимная индуктивность между двумя кольцами.
+    
+    Параметры:
+        c1, c2       : (3,) центры колец
+        e1a, e1b     : (3,) ортонормированный базис плоскости первого кольца
+        e2a, e2b     : (3,) ортонормированный базис плоскости второго кольца
+        r1, r2       : радиусы колец
+        f            : частота (Гц)
+    """
     k = 2.0 * np.pi * f / c
 
     def base_kernel(theta1, theta2):
@@ -102,7 +110,6 @@ def mutual_inductance_rings_nonqs_from_coords(
         return dl_dot, 1.0 / R_dist, cos_kR, sin_kR
 
     # dblquad требует func(y, x) — первая переменная внутренняя.
-    # У нас dblquad(func, a, b, gfun, hfun): x в [a,b], y в [gfun(x), hfun(x)]
     def integrand_real(theta2, theta1):
         dl_dot, inv_R, cos_kR, _ = base_kernel(theta1, theta2)
         return dl_dot * inv_R * cos_kR
@@ -128,26 +135,23 @@ def mutual_inductance_rings_nonqs_from_coords(
 # 4. Полная матрица (аналог inductance_matrix, но неquasi-static)
 # ---------------------------------------------------------------------------
 def inductance_matrix_nonqs(
-    delta, A, n, m, R, L_own, f=0.0, N=128,
+    ring_centers, normals, e1, e2, radii,
+    n, m, L_own, f=0.0,
     epsabs=1e-10, epsrel=1e-8,
 ):
-    coords, tangents, normals = points_and_tangents_on_rings_general(
-        delta, n, A, N, R, m
-    )
     mn = m * n
-    coords_r = coords.reshape(mn, N, 3)
-
     L = np.zeros((mn, mn), dtype=complex)
     for i in range(mn):
-        i_stack = i // n
+        i_stack, i_ring = i // n, i % n
         for j in range(i, mn):
-            j_stack = j // n
+            j_stack, j_ring = j // n, j % n
             if i == j:
                 L[i, j] = L_own
                 continue
-            M = mutual_inductance_rings_nonqs_from_coords(
-                coords_r[i], coords_r[j], f=f,
-                epsabs=epsabs, epsrel=epsrel,
+            M = mutual_inductance_rings_nonqs(
+                c1=ring_centers[i], e1a=e1[i_stack], e1b=e2[i_stack], r1=radii[i_ring],
+                c2=ring_centers[j], e2a=e1[j_stack], e2b=e2[j_stack], r2=radii[j_ring],
+                f=f, epsabs=epsabs, epsrel=epsrel,
             )
             sign = np.sign(np.dot(normals[i_stack], normals[j_stack]))
             L[i, j] = sign * M

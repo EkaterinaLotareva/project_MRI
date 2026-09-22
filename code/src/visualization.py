@@ -57,3 +57,36 @@ def visualize_rings(all_coords, ring_centers, normals, N_seg, n, m):
     plt.tight_layout()
     plt.show()
     plt.close()
+
+    import matplotlib.pyplot as plt
+
+def plot_field_comparison(
+    x_line, 
+    B_amp_qs, 
+    B_amp_nonqs, 
+    axis_name='X', 
+    title='Сравнение режимов расчета', 
+    save_path=None
+):
+    """Построение двух профилей поля на одних осях."""
+    plt.figure(figsize=(10, 6))
+    
+    # Квазистатика (сплошная синяя линия)
+    plt.plot(x_line, B_amp_qs, 'b-', linewidth=2, label='Квазистатика (QS)')
+    
+    # Неквазистатика (пунктирная красная линия)
+    plt.plot(x_line, B_amp_nonqs, 'r--', linewidth=2, label='Неквазистатика (Non-QS)')
+    
+    plt.xlabel(f'Координата {axis_name} (м)', fontsize=11)
+    plt.ylabel('|B| (Тл)', fontsize=11)
+    plt.title(title, fontsize=12)
+    plt.legend(fontsize=10)
+    plt.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Сравнительный график сохранен: {save_path}")
+        
+    plt.show()
