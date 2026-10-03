@@ -1,4 +1,4 @@
-# src/nonqs_inductance.py
+# функция написана Михаилом Петровым (для случев, когда оси колец параллельны и перпендикулярны), также добавлен расчет для промежуточных углов
 import numpy as np
 from scipy.integrate import dblquad
 from src.geometry import points_on_rings_one_stack, stack_basis
@@ -7,16 +7,7 @@ mu0 = 4 * np.pi * 1e-7
 c = 299792458.0
 
 
-# ---------------------------------------------------------------------------
-# 1. Геометрия: точки + касательные (расширение points_on_rings_general)
-# ---------------------------------------------------------------------------
 def points_and_tangents_on_rings_general(delta, n, A, N, R, m):
-    """
-    Возвращает:
-        coords   : (m*n*N, 3)
-        tangents : (m*n*N, 3)
-        normals  : (m, 3)
-    """
     fi = 2 * np.pi / m
     base_part = points_on_rings_one_stack(delta, n, A, N, R)
     base_normal = np.array([-1.0, 0.0, 0.0])
@@ -55,41 +46,12 @@ def points_and_tangents_on_rings_general(delta, n, A, N, R, m):
             np.array(normals_list))
 
 
-"""
-def fit_ring_geometry(coords_block):
-    
-    coords_block : (N, 3), точки одного кольца, равномерно по theta.
-    Возвращает center (3,), e1 (3,), e2 (3,), radius (float).
-    
-    center = coords_block.mean(axis=0)
-    v0 = coords_block[0] - center
-    r = np.linalg.norm(v0)
-    e1 = v0 / r
-    v1 = coords_block[1] - center
-    perp = v1 - (v1 @ e1) * e1
-    e2 = perp / np.linalg.norm(perp)
-    return center, e1, e2, r
-"""
-
-# ---------------------------------------------------------------------------
-# 3. Не квазистатическая M между двумя кольцами (по точкам)
-# ---------------------------------------------------------------------------
 def mutual_inductance_rings_nonqs(
     c1, e1a, e1b, r1,   # аналитические параметры первого кольца
     c2, e2a, e2b, r2,   # аналитические параметры второго кольца
     f,
     epsabs=1e-10, epsrel=1e-8,
 ):
-    """
-    Не квазистатическая взаимная индуктивность между двумя кольцами.
-    
-    Параметры:
-        c1, c2       : (3,) центры колец
-        e1a, e1b     : (3,) ортонормированный базис плоскости первого кольца
-        e2a, e2b     : (3,) ортонормированный базис плоскости второго кольца
-        r1, r2       : радиусы колец
-        f            : частота (Гц)
-    """
     k = 2.0 * np.pi * f / c
 
     def base_kernel(theta1, theta2):
@@ -109,7 +71,6 @@ def mutual_inductance_rings_nonqs(
         sin_kR = np.sin(k * R_dist)
         return dl_dot, 1.0 / R_dist, cos_kR, sin_kR
 
-    # dblquad требует func(y, x) — первая переменная внутренняя.
     def integrand_real(theta2, theta1):
         dl_dot, inv_R, cos_kR, _ = base_kernel(theta1, theta2)
         return dl_dot * inv_R * cos_kR
@@ -131,9 +92,7 @@ def mutual_inductance_rings_nonqs(
     return mu0 / (4 * np.pi) * (re_int + 1j * im_int)
 
 
-# ---------------------------------------------------------------------------
-# 4. Полная матрица (аналог inductance_matrix, но неquasi-static)
-# ---------------------------------------------------------------------------
+
 def inductance_matrix_nonqs(
     ring_centers, normals, e1, e2, radii,
     n, m, L_own, f=0.0,

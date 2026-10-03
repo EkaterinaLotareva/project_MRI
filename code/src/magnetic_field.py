@@ -5,19 +5,11 @@ import matplotlib.pyplot as plt
 from scipy.integrate import dblquad
 from src.geometry import points_on_rings_general, ring_center_general
 from src.currents import Z_self_matrix, generate_voltage_array, calc_I
-from src.inductance import inductance_matrix
+from src.inductance import inductance_matrix_nonqs
 mu0=4*np.pi*1e-7
 mu0_over_4pi = mu0 / (4 * np.pi) 
 
 def B_analytical(r_obs, R, I, center, normal):
-    """
-    Аналитический расчет магнитного поля витка.
-    r_obs: (3,) координаты точки наблюдения (глобальные)
-    R: радиус кольца
-    I: ток
-    center: (3,) координаты центра кольца
-    normal: (3,) единичный вектор нормали к плоскости кольца
-    """
     r_local = r_obs - center
     z = np.dot(r_local, normal)
     rho_vec = r_local - z * normal
@@ -30,7 +22,7 @@ def B_analytical(r_obs, R, I, center, normal):
     rho_unit = rho_vec / rho # Единичный вектор радиального направления
     k2 = (4 * R * rho) / ((R + rho)**2 + z**2)
     
-    # 4. Расчет компонентов
+
     denom = np.sqrt((R + rho)**2 + z**2)
     denom_special = (R - rho)**2 + z**2
 
