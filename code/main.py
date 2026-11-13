@@ -2,14 +2,13 @@ import os
 import numpy as np
 import src.config as config  
 from src.geometry import points_on_rings_general, all_rings_centers, stack_basis
-from src.inductance_quasystat import inductance_matrix
+from src.inductance_quasystat import inductance_matrix_quasystat
 from src.nonqs_inductance import inductance_matrix_nonqs
 from src.currents import Z_self_matrix, generate_voltage_array, calc_I
 from src.magnetic_field import b_s_l_optimized, quality_metric
 from src.visualization import plot_field_contour, plot_field_along_axis, visualize_rings, plot_field_comparison
 from src.utils import create_run_directory, save_simulation_data
 
-print("=== MRI Field Simulation ===")
 
 
 CALC_MODE = 'both'
@@ -28,13 +27,13 @@ results = {}
 
 
 if CALC_MODE in ['qs', 'both']:
-    L_qs = inductance_matrix(n=n, m=m, R=radii, L_own=config.L_self, A=A, delta=gaps)
+    L_qs = inductance_matrix_quasystat(n=n, m=m, R=radii, L_own=config.L_self, A=A, delta=gaps)
     
     Z_self_qs = Z_self_matrix(r=r_ohm, C=C, n=n, m=m, R=radii, omega=omega)
     U_qs = generate_voltage_array(U_0=U_0, m=m, n=n)
     I_matrix_qs = calc_I(Z_self=Z_self_qs, U=U_qs, omega=omega, L=L_qs, n=n, m=m)
     
-    # Профили поля
+
     x_line = np.linspace(-0.05, 0.05, 200)
     obs_points_1d_x = np.stack((x_line, np.zeros_like(x_line), np.zeros_like(x_line)), axis=1)
     B_1d_amp_x_qs = np.linalg.norm(
@@ -47,7 +46,7 @@ if CALC_MODE in ['qs', 'both']:
         'I_matrix': I_matrix_qs,
         'B_x': B_1d_amp_x_qs,
     }
-    print(f"  Максимум |B| (QS): {np.max(B_1d_amp_x_qs):.4e} Тл")
+    print(f"  Максимум |B|: {np.max(B_1d_amp_x_qs):.4e} Тл")
 
 
 if CALC_MODE in ['nonqs', 'both']:
@@ -86,13 +85,10 @@ if CALC_MODE in ['nonqs', 'both']:
 
 
 if COMPARE_MODES and 'qs' in results and 'nonqs' in results:
-    print("\n=== СРАВНЕНИЕ РЕЖИМОВ ===")
     B_max_qs = np.max(results['qs']['B_x'])
     B_max_nonqs = np.max(results['nonqs']['B_x'])
     rel_diff = (B_max_nonqs - B_max_qs) / B_max_qs * 100
     
-    print(f"Максимум |B| (QS):     {B_max_qs:.6e} Тл")
-    print(f"Максимум |B| (Non-QS): {B_max_nonqs:.6e} Тл")
     
     plot_field_comparison(
     x_line=x_line,
@@ -112,5 +108,3 @@ if 'qs' in results:
 if 'nonqs' in results:
     np.save(os.path.join(run_folder, "I_matrix_nonqs.npy"), results['nonqs']['I_matrix'])
     np.save(os.path.join(run_folder, "B_profile_x_nonqs.npy"), results['nonqs']['B_x'])
-
-print(f"\nРезультаты сохранены в: {run_folder}")

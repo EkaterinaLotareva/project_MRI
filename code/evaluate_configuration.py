@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import src.config as config
 from src.geometry import points_on_rings_general, all_rings_centers
 from src.currents import Z_self_matrix, generate_voltage_array, calc_I
-from src.magnetic_field import b_s_l_optimized, quality_metric
+from src.magnetic_field import b_s_l_optimized, quality_metric_std
 
 
 from src.inductance_quasystat import inductance_matrix_quasystat
@@ -16,9 +16,9 @@ from src.inductance import inductance_matrix_nonqs
 
 
 
-# парсить параметры из файла (чтобы визуализировать оптимизацию
+# парсить параметры из файла (чтобы визуализировать оптимизацию)
 LOAD_FROM_JSON = True
-JSON_PATH = "optimization_results/opt_20260923_035658/optimized_config.json"
+JSON_PATH = "optimization_results/opt_20261111_153237/optimized_config.json"
 
 
 CUSTOM_C = 39.36e-12   # 39.36 пФ
@@ -35,7 +35,7 @@ CALCULATION_MODE = 'quasistatic'
 
 X_SPAN_MM = 60.0          # Диапазон построения поля
 NUM_POINTS_X = 300        # Количество расчетных точек
-ROI_FRACTION = 0.40       # (круг радиусом k*A)
+ROI_FRACTION = 0.50       # (круг радиусом k*A)
 
 
 RING_COLOR = 'tab:blue'
@@ -84,7 +84,7 @@ def main():
     print("-" * 65)
 
     all_coords, normals = points_on_rings_general(
-        delta=deltas, n=n, A=A, N=128, R=radii, m=m
+        delta=deltas, n=n, A=A, N=1024, R=radii, m=m
     )
     global_centers = all_rings_centers(delta=deltas, A=A, n=n, m=m, fi=fi)
     stack_x_centers = np.cumsum(np.insert(deltas, 0, A)) if len(deltas) > 0 else np.array([A])
@@ -92,16 +92,53 @@ def main():
 
 
     if CALCULATION_MODE == 'quasistatic':
-        L = inductance_matrix_quasystat(n=n, m=m, R=radii, L_own=L_own, A=A, delta=deltas)
+        from src.geometry import stack_basis
+        from src.inductance_quasystat import set_geometry
+
+        # построить геометрию
+        _, normals = points_on_rings_general(delta=deltas, n=n, A=A, N=1024, R=radii, m=m)
+        centers = all_rings_centers(delta=deltas, A=A, n=n, m=m, fi=fi)
+        e1, e2 = stack_basis(m)
+
+        # установить геометрию
+        set_geometry(
+            m=m, n=n,
+            ring_centers=centers,
+            e1=e1, e2=e2,
+            radii=radii,
+            L_own=L_own,
+        )
+
+        # получить матрицу
+        L = inductance_matrix_quasystat(f_hz=omega / (2 * np.pi))
     else:
         L = inductance_matrix_nonqs(n=n, m=m, R=radii, L_own=L_own, A=A, delta=deltas)
 
 
 
+    # --- поиск резонанса через AAA (как в оптимизации) ---
+    from src.resonance_find import find_resonance_frequency
+
     C_array = np.full(n * m, C_val)
-    Z_self = Z_self_matrix(r=r_ohm, C=C_array, n=n, m=m, R=radii, omega=omega)
+    f_res, _, _, _ = find_resonance_frequency(
+        L=L, n=n, m=m, radii=radii,
+        A=A, gaps=deltas,
+        C_value=C_array, r_ohm=r_ohm, U_0=U_0,
+        ring_centers=global_centers, normals=normals,
+        f_min=250e6, f_max=350e6,
+        n_coarse=200, n_fine=4000,
+        aaa_tol=1e-8, aaa_mmax=80,
+        prominence_frac=0.01,
+        return_curve=True, return_all_peaks=True,
+    )
+
+    omega_res = f_res * 2 * np.pi
+    print(f"Резонанс: f_res = {f_res/1e6:.2f} МГц")
+
+    # --- токи на резонансе ---
+    Z_self = Z_self_matrix(r=r_ohm, C=C_array, n=n, m=m, R=radii, omega=omega_res)
     U = generate_voltage_array(U_0=U_0, m=m, n=n, phi_0=phi_0)
-    I_matrix = calc_I(Z_self=Z_self, U=U, omega=omega, L=L, n=n, m=m)
+    I_matrix = calc_I(Z_self=Z_self, U=U, omega=omega_res, L=L, n=n, m=m)
 
 
 
@@ -110,9 +147,9 @@ def main():
     B_amp_x = np.linalg.norm(B_complex_x, axis=1)
 
 
-    cv_val = quality_metric(
+    cv_val = quality_metric_std(
         I=I_matrix, n=n, m=m, current_centers=global_centers,
-        current_normals=normals, R_array=radii, R_domain=R_domain, N_grid=25
+        current_normals=normals, R_array=radii, R_domain=R_domain, N_grid=20
     )
 
     B_center = B_amp_x[len(B_amp_x) // 2]
@@ -120,7 +157,7 @@ def main():
     print(f" Однородность CV (ROI): {cv_val * 100:.2f} % (std/mean)\n")
 
 
-    coords_per_ring_mm = all_coords.reshape((m * n, 128, 3)) * 1000.0
+    coords_per_ring_mm = all_coords.reshape((m * n, 1024, 3)) * 1000.0
     gc_mm = global_centers * 1000.0
     theta_circ = np.linspace(0, 2 * np.pi, 100)
 
@@ -135,7 +172,7 @@ def main():
         ax_3d.plot(pts_closed[:, 0], pts_closed[:, 1], pts_closed[:, 2],
                    color=RING_COLOR, lw=1.6, alpha=0.85)
 
-    ax_3d.scatter(gc_mm[:, 0], gc_mm[:, 1], gc_mm[:, 2], color='red', s=15, label=f"область расчета -- {ROI_FRACTION}*0.08 м")
+    ax_3d.scatter(gc_mm[:, 0], gc_mm[:, 1], gc_mm[:, 2], color='red', s=15, label=f"область расчета -- {ROI_FRACTION}*{A} м")
 
 
     ax_3d.set_title("", fontsize=13, pad=15)
@@ -225,7 +262,7 @@ def main():
     
 
 
-    ax_b.set_title(f"|B| вдоль оси X, область расчета -- {ROI_FRACTION}*0.08 м", fontsize=13)
+    ax_b.set_title(f"|B| вдоль оси X, область расчета -- {ROI_FRACTION}*{A} м", fontsize=13)
     ax_b.set_xlabel("X (мм)", fontsize=11)
     ax_b.set_ylabel("|B| (мкТл)", fontsize=11)
     ax_b.grid(True, linestyle='--', alpha=0.5)

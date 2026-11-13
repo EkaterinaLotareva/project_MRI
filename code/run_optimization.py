@@ -14,8 +14,9 @@ from src.visualization import visualize_rings
 
 
 
+
 N_PARTICLES = 30           # Число частиц роя 
-MAX_ITERATIONS = 45        # Число итераций 
+MAX_ITERATIONS = 300        # Число итераций 
 PSO_OPTIONS = {
     'c1': 1.7,             # Когнитивный вес (тяга к личному рекорду)
     'c2': 1.7,             # Социальный вес (тяга к рекорду роя)
@@ -29,24 +30,26 @@ CALCULATION_MODE = 'quasistatic'
 k = 0.50        
 
 
-OVERRIDE_CONFIG = True
+OVERRIDE_CONFIG = False
 M_STACKS = 6
 N_RINGS = 5
 A_RATIO = 0.08
 
 
-C_BOUNDS = (5e-12, 50e-12)       # Емкость: 5 - 50 пФ
-R_BOUNDS = (0.020, 0.050)        # Радиусы колец: 20 - 50 мм
-DELTA_BOUNDS = (0.001, 0.040)    # Зазоры между кольцами вдоль стопки: 1 - 40 мм
+C_BOUNDS = (1.4e-12, 2e-12)        
+R_BOUNDS = (0.020, 0.050)
+DELTA_BOUNDS = (0.001, 0.040)
 
 
 
 
 def run_pso_optimization():
-
-    
-
     fp = config.get_fixed_params()
+    fp = config.get_fixed_params()
+    fp['f_min'] = 250e6
+    fp['f_max'] = 350e6
+    fp['B_target'] = 1e-6
+    fp['N'] = 1024
     
     if OVERRIDE_CONFIG:
         fp['m'] = int(M_STACKS)
@@ -62,6 +65,7 @@ def run_pso_optimization():
     R_domain = k * A
     fp['R_domain'] = R_domain
     fp['calculation_mode'] = CALCULATION_MODE
+
     
     print(f"Режим расчета поля:     {CALCULATION_MODE.upper()}")
     print(f"Геометрия катушки:      стопок m = {m}, колец в стопке n = {n}")
@@ -72,8 +76,8 @@ def run_pso_optimization():
 
     optimizer = MRIOptimizer(fp)
     
-    lower_bounds = [C_BOUNDS[0]] + [R_BOUNDS[0]] * n
-    upper_bounds = [C_BOUNDS[1]] + [R_BOUNDS[1]] * n
+    lower_bounds = [R_BOUNDS[0]] * n
+    upper_bounds = [R_BOUNDS[1]] * n
     
     if n > 1:
         lower_bounds += [DELTA_BOUNDS[0]] * (n - 1)
@@ -90,7 +94,9 @@ def run_pso_optimization():
     )
     
 
-    opt_C, opt_radii, opt_deltas = optimizer.unpack_position(best_pos)
+    opt_radii = best_pos[0 : n]
+    opt_deltas = best_pos[n : n + (n - 1)]
+    opt_C = float(np.asarray(fp['C']).flat[0])
     
     if len(opt_deltas) > 0:
         stack_x_centers = np.cumsum(np.insert(opt_deltas, 0, A))
